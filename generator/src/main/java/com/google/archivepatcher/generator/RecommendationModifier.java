@@ -15,6 +15,7 @@
 package com.google.archivepatcher.generator;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.List;
 
 /**
@@ -35,5 +36,5 @@ public interface RecommendationModifier {
    * @return the updated list of recommendations
    */
   public List<QualifiedRecommendation> getModifiedRecommendations(
-      File oldFile, File newFile, List<QualifiedRecommendation> originalRecommendations);
+          Path oldFile, Path newFile, List<QualifiedRecommendation> originalRecommendations);
 }

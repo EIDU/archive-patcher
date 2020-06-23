@@ -17,6 +17,7 @@ package com.google.archivepatcher.generator.similarity;
 import com.google.archivepatcher.generator.MinimalZipEntry;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -41,7 +42,7 @@ public class Crc32SimilarityFinder extends SimilarityFinder {
    * @param baseArchive the base archive that contains the entries to be searched
    * @param baseEntries the entries in the base archive that are eligible to be searched
    */
-  public Crc32SimilarityFinder(File baseArchive, Collection<MinimalZipEntry> baseEntries) {
+  public Crc32SimilarityFinder(Path baseArchive, Collection<MinimalZipEntry> baseEntries) {
     super(baseArchive, baseEntries);
     for (MinimalZipEntry oldEntry : baseEntries) {
       long crc32 = oldEntry.getCrc32OfUncompressedData();
@@ -55,7 +56,7 @@ public class Crc32SimilarityFinder extends SimilarityFinder {
   }
 
   @Override
-  public List<MinimalZipEntry> findSimilarFiles(File newArchive, MinimalZipEntry newEntry) {
+  public List<MinimalZipEntry> findSimilarFiles(Path newArchive, MinimalZipEntry newEntry) {
     List<MinimalZipEntry> matchedEntries =
         baseEntriesByCrc32.get(newEntry.getCrc32OfUncompressedData());
     if (matchedEntries == null) {

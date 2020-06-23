@@ -35,6 +35,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -71,12 +73,12 @@ public class FileByFileV1DeltaApplierTest {
   /**
    * Where to store temp files.
    */
-  private File tempDir;
+  private Path tempDir;
 
   /**
    * The old file.
    */
-  private File oldFile;
+  private Path oldFile;
 
   /**
    * Bytes that describe a patch to convert the old file to the new file.
@@ -114,11 +116,10 @@ public class FileByFileV1DeltaApplierTest {
     // 2. The new file, in memory only (for comparing results at the end).
     // 3. The patch, in memory.
 
-    File tempFile = File.createTempFile("foo", "bar");
-    tempDir = tempFile.getParentFile();
-    tempFile.delete();
-    oldFile = File.createTempFile("fbfv1dat", "old");
-    oldFile.deleteOnExit();
+    Path tempFile = Files.createTempFile("foo", "bar");
+    tempDir = tempFile.getParent();
+    Files.deleteIfExists(tempFile);
+    oldFile = Files.createTempFile("fbfv1dat", "old");
 
     // Write the old file to disk:
     ByteArrayOutputStream buffer = new ByteArrayOutputStream();
@@ -126,7 +127,7 @@ public class FileByFileV1DeltaApplierTest {
     buffer.write(COMPRESSED_OLD_CONTENT);
     buffer.write(UNCOMPRESSED_TRAILER);
     oldFileBytes = buffer.toByteArray();
-    FileOutputStream out = new FileOutputStream(oldFile);
+    OutputStream out = Files.newOutputStream(oldFile);
     out.write(oldFileBytes);
     out.flush();
     out.close();
@@ -209,7 +210,7 @@ public class FileByFileV1DeltaApplierTest {
   private class FakeDeltaApplier implements DeltaApplier {
   @SuppressWarnings("resource")
   @Override
-    public void applyDelta(File oldBlob, InputStream deltaIn, OutputStream newBlobOut)
+    public void applyDelta(Path oldBlob, InputStream deltaIn, OutputStream newBlobOut)
         throws IOException {
       // Check the patch is as expected
       DataInputStream deltaData = new DataInputStream(deltaIn);
@@ -218,9 +219,9 @@ public class FileByFileV1DeltaApplierTest {
       Assert.assertArrayEquals(BSDIFF_DELTA.getBytes("US-ASCII"), actualDeltaDataRead);
 
       // Check that the old data is as expected
-      int oldSize = (int) oldBlob.length();
+      int oldSize = (int) Files.size(oldBlob);
       byte[] oldData = new byte[oldSize];
-      FileInputStream oldBlobIn = new FileInputStream(oldBlob);
+      InputStream oldBlobIn = Files.newInputStream(oldBlob);
       DataInputStream oldBlobDataIn = new DataInputStream(oldBlobIn);
       oldBlobDataIn.readFully(oldData);
       Assert.assertArrayEquals(expectedDeltaFriendlyOldFileBytes, oldData);
@@ -235,7 +236,7 @@ public class FileByFileV1DeltaApplierTest {
   @After
   public void tearDown() {
     try {
-      oldFile.delete();
+      Files.deleteIfExists(oldFile);
     } catch (Exception ignored) {
       // Nothing
     }

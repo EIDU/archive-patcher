@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Path;
 
 /**
  * An interface to be implemented by delta appliers.
@@ -31,6 +32,6 @@ public interface DeltaApplier {
    * @param newBlobOut the stream to write the result to
    * @throws IOException in the event of an I/O error reading the input or writing the output
    */
-  public void applyDelta(File oldBlob, InputStream deltaIn, OutputStream newBlobOut)
+  public void applyDelta(Path oldBlob, InputStream deltaIn, OutputStream newBlobOut)
       throws IOException;
 }

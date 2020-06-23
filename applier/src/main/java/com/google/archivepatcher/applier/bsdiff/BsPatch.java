@@ -15,12 +15,10 @@
 package com.google.archivepatcher.applier.bsdiff;
 
 import com.google.archivepatcher.applier.PatchFormatException;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.RandomAccessFile;
+
+import java.io.*;
+import java.nio.channels.Channels;
+import java.nio.channels.FileChannel;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -71,7 +69,7 @@ public class BsPatch {
    * @throws IOException if unable to read or write any of the data
    */
   public static void applyPatch(
-      RandomAccessFile oldData, OutputStream newData, InputStream patchData)
+          FileChannel oldData, OutputStream newData, InputStream patchData)
       throws PatchFormatException, IOException {
     applyPatch(oldData, newData, patchData, null);
   }
@@ -89,7 +87,7 @@ public class BsPatch {
    * @throws IOException if unable to read or write any of the data
    */
   public static void applyPatch(
-      RandomAccessFile oldData, OutputStream newData, InputStream patchData, Long expectedNewSize)
+      FileChannel oldData, OutputStream newData, InputStream patchData, Long expectedNewSize)
       throws PatchFormatException, IOException {
     patchData = new BufferedInputStream(patchData, PATCH_STREAM_BUFFER_SIZE);
     newData = new BufferedOutputStream(newData, OUTPUT_STREAM_BUFFER_SIZE);
@@ -102,7 +100,7 @@ public class BsPatch {
 
   /** Does the work of the public applyPatch method. */
   private static void applyPatchInternal(
-      final RandomAccessFile oldData,
+      final FileChannel oldData,
       final OutputStream newData,
       final InputStream patchData,
       final Long expectedNewSize)
@@ -120,7 +118,7 @@ public class BsPatch {
     }
 
     // Sanity-check: ensure a-priori knowledge matches patch expectations
-    final long oldSize = oldData.length();
+    final long oldSize = oldData.size();
     if (oldSize > Integer.MAX_VALUE) {
       throw new PatchFormatException("bad oldSize");
     }
@@ -203,7 +201,7 @@ public class BsPatch {
       }
 
       // At this point everything is known to be sane, and the operations should all succeed.
-      oldData.seek(oldDataOffset);
+      oldData.position(oldDataOffset);
       if (diffSegmentLength > 0) {
         transformBytes((int) diffSegmentLength, patchData, oldData, newData, buffer1, buffer2);
       }
@@ -240,7 +238,7 @@ public class BsPatch {
   static void transformBytes(
       final int diffLength,
       final InputStream patchData,
-      final RandomAccessFile oldData,
+      final FileChannel oldData,
       final OutputStream newData,
       final byte[] buffer1,
       final byte[] buffer2)
@@ -248,7 +246,7 @@ public class BsPatch {
     int numBytesLeft = diffLength;
     while (numBytesLeft > 0) {
       final int numBytesThisRound = Math.min(numBytesLeft, buffer1.length);
-      oldData.readFully(buffer1, 0, numBytesThisRound);
+      readFully(Channels.newInputStream(oldData), buffer1, 0, numBytesThisRound);
       readFully(patchData, buffer2, 0, numBytesThisRound);
       for (int i = 0; i < numBytesThisRound; i++) {
         buffer1[i] += buffer2[i];

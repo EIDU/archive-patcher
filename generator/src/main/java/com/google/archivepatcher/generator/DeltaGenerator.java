@@ -17,6 +17,7 @@ package com.google.archivepatcher.generator;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Path;
 
 /**
  * An interface to be implemented by delta generators.
@@ -32,6 +33,6 @@ public interface DeltaGenerator {
    *     delta output stream
    * @throws InterruptedException if any thread has interrupted the current thread
    */
-  public void generateDelta(File oldBlob, File newBlob, OutputStream deltaOut)
+  public void generateDelta(Path oldBlob, Path newBlob, OutputStream deltaOut)
       throws IOException, InterruptedException;
 }

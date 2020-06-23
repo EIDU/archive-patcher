@@ -14,10 +14,13 @@
 
 package com.google.archivepatcher.shared;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 
 /**
  * An {@link InputStream} backed by a file that is assumed to be unchanging, such that it is
@@ -34,10 +37,12 @@ import java.io.RandomAccessFile;
  * </ul>
  */
 public class RandomAccessFileInputStream extends InputStream {
+  private final ByteBuffer singleByteBuffer = ByteBuffer.allocate(1);
+
   /**
-   * The backing {@link RandomAccessFile}.
+   * The backing {@link FileChannel}.
    */
-  private final RandomAccessFile raf;
+  private final FileChannel raf;
 
   /**
    * The current mark in the file, if set; otherwise -1.
@@ -62,13 +67,13 @@ public class RandomAccessFileInputStream extends InputStream {
   /**
    * Constructs a new stream for the given file, which will be opened in read-only mode for random
    * access cross the entire file. Equivalent to calling
-   * {@link #RandomAccessFileInputStream(File, long, long)} with 0 and {@link File#length()} as the
+   * {@link #RandomAccessFileInputStream(Path, long, long)} with 0 and {@link Files#size(Path)} as the
    * range parameters.
    * @param file the file to read
    * @throws IOException if unable to open the file for read
    */
-  public RandomAccessFileInputStream(File file) throws IOException {
-    this(file, 0, file.length());
+  public RandomAccessFileInputStream(Path file) throws IOException {
+    this(file, 0, Files.size(file));
   }
 
   /**
@@ -79,21 +84,21 @@ public class RandomAccessFileInputStream extends InputStream {
    * @param rangeLength the number of bytes in the range
    * @throws IOException if unable to open the file for read
    */
-  public RandomAccessFileInputStream(File file, long rangeOffset, long rangeLength)
+  public RandomAccessFileInputStream(Path file, long rangeOffset, long rangeLength)
       throws IOException {
     raf = getRandomAccessFile(file);
-    fileLength = file.length();
+    fileLength = Files.size(file);
     setRange(rangeOffset, rangeLength);
   }
 
   /**
-   * Given a {@link File}, get a read-only {@link RandomAccessFile} reference for it.
+   * Given a {@link Path}, get a read-only {@link FileChannel} reference for it.
    * @param file the file
    * @return as described
    * @throws IOException if unable to open the file
    */
-  protected RandomAccessFile getRandomAccessFile(File file) throws IOException {
-    return new RandomAccessFile(file, "r");
+  protected FileChannel getRandomAccessFile(Path file) throws IOException {
+    return FileChannel.open(file, StandardOpenOption.READ);
   }
 
   /**
@@ -125,7 +130,7 @@ public class RandomAccessFileInputStream extends InputStream {
 
   @Override
   public int available() throws IOException {
-    long rangeRelativePosition = raf.getFilePointer() - rangeOffset;
+    long rangeRelativePosition = raf.position() - rangeOffset;
     long result = rangeLength - rangeRelativePosition;
     if (result > Integer.MAX_VALUE) {
       return Integer.MAX_VALUE;
@@ -139,7 +144,7 @@ public class RandomAccessFileInputStream extends InputStream {
    * @throws IOException if something goes wrong
    */
   public long getPosition() throws IOException {
-    return raf.getFilePointer();
+    return raf.position();
   }
 
   @Override
@@ -152,7 +157,11 @@ public class RandomAccessFileInputStream extends InputStream {
     if (available() <= 0) {
       return -1;
     }
-    return raf.read();
+    singleByteBuffer.position(0);
+    int result = raf.read(singleByteBuffer);
+    if (result != 1)
+      throw new IOException("Got only " + result + " bytes");
+    return singleByteBuffer.get(0) & 0xFF;  // & 0xFF is necessary to convert from signed bytes to unsigned bytes
   }
 
   @Override
@@ -164,7 +173,8 @@ public class RandomAccessFileInputStream extends InputStream {
     if (available <= 0) {
       return -1;
     }
-    int result = raf.read(b, off, Math.min(len, available));
+
+    int result = raf.read(ByteBuffer.wrap(b, off, Math.min(len, available)));
     return result;
   }
 
@@ -183,7 +193,7 @@ public class RandomAccessFileInputStream extends InputStream {
       return 0;
     }
     int skipAmount = (int) Math.min(available, n);
-    raf.seek(raf.getFilePointer() + skipAmount);
+    raf.position(raf.position() + skipAmount);
     return skipAmount;
   }
 
@@ -199,7 +209,7 @@ public class RandomAccessFileInputStream extends InputStream {
   @Override
   public void mark(int readlimit) {
     try {
-      mark = raf.getFilePointer();
+      mark = raf.position();
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
@@ -210,7 +220,7 @@ public class RandomAccessFileInputStream extends InputStream {
     if (mark < 0) {
       throw new IOException("mark not set");
     }
-    raf.seek(mark);
+    raf.position(mark);
   }
 
   /**

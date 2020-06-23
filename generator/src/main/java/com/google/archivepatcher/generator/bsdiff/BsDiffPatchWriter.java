@@ -18,7 +18,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
+import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 
 // TODO(andrewhayden) clean up the various generatePatch(...) methods, there are too many.
 
@@ -312,7 +315,7 @@ public class BsDiffPatchWriter {
    * @throws InterruptedException if any thread interrupts this thread
    */
   public static void generatePatch(
-      final File oldData, final File newData, final OutputStream outputStream)
+          final Path oldData, final Path newData, final OutputStream outputStream)
       throws IOException, InterruptedException {
     generatePatch(oldData, newData, outputStream, DEFAULT_MINIMUM_MATCH_LENGTH);
   }
@@ -331,16 +334,16 @@ public class BsDiffPatchWriter {
    * @throws InterruptedException if any thread interrupts this thread
    */
   public static void generatePatch(
-      final File oldData,
-      final File newData,
+      final Path oldData,
+      final Path newData,
       final OutputStream outputStream,
       final int minimumMatchLength)
       throws IOException, InterruptedException {
-    try (RandomAccessFile oldDataRAF = new RandomAccessFile(oldData, "r");
-        RandomAccessFile newDataRAF = new RandomAccessFile(newData, "r");
-        RandomAccessObject oldDataRAO =
+    try (FileChannel oldDataRAF = FileChannel.open(oldData, StandardOpenOption.READ);
+         FileChannel newDataRAF = FileChannel.open(newData, StandardOpenOption.READ);
+         RandomAccessObject oldDataRAO =
             new RandomAccessObject.RandomAccessMmapObject(oldDataRAF, "r");
-        RandomAccessObject newDataRAO =
+         RandomAccessObject newDataRAO =
             new RandomAccessObject.RandomAccessMmapObject(newDataRAF, "r"); ) {
       generatePatch(
           oldDataRAO,

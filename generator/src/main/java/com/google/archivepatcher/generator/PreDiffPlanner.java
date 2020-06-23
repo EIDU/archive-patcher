@@ -21,6 +21,7 @@ import com.google.archivepatcher.shared.RandomAccessFileInputStream;
 import com.google.archivepatcher.shared.TypedRange;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -36,12 +37,12 @@ class PreDiffPlanner {
   /**
    * The old archive.
    */
-  private final File oldFile;
+  private final Path oldFile;
 
   /**
    * The new archive.
    */
-  private final File newFile;
+  private final Path newFile;
 
   /**
    * The entries in the old archive, with paths as keys.
@@ -78,9 +79,9 @@ class PreDiffPlanner {
    *     in {@link #generatePreDiffPlan()}.
    */
   PreDiffPlanner(
-      File oldFile,
+          Path oldFile,
       Map<ByteArrayHolder, MinimalZipEntry> oldArchiveZipEntriesByPath,
-      File newFile,
+          Path newFile,
       Map<ByteArrayHolder, MinimalZipEntry> newArchiveZipEntriesByPath,
       Map<ByteArrayHolder, JreDeflateParameters> newArchiveJreDeflateParametersByPath,
       RecommendationModifier... recommendationModifiers) {

@@ -15,6 +15,7 @@
 package com.google.archivepatcher.generator;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -82,7 +83,7 @@ public class TotalRecompressionLimiter implements RecommendationModifier {
 
   @Override
   public List<QualifiedRecommendation> getModifiedRecommendations(
-      File oldFile, File newFile, List<QualifiedRecommendation> originalRecommendations) {
+          Path oldFile, Path newFile, List<QualifiedRecommendation> originalRecommendations) {
 
     List<QualifiedRecommendation> sorted =
         new ArrayList<QualifiedRecommendation>(originalRecommendations);

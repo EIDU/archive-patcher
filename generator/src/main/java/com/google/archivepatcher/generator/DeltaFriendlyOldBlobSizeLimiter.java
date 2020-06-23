@@ -15,6 +15,9 @@
 package com.google.archivepatcher.generator;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -65,12 +68,17 @@ public class DeltaFriendlyOldBlobSizeLimiter implements RecommendationModifier {
 
   @Override
   public List<QualifiedRecommendation> getModifiedRecommendations(
-      File oldFile, File newFile, List<QualifiedRecommendation> originalRecommendations) {
+          Path oldFile, Path newFile, List<QualifiedRecommendation> originalRecommendations) {
 
     List<QualifiedRecommendation> sorted = sortRecommendations(originalRecommendations);
 
     List<QualifiedRecommendation> result = new ArrayList<>(sorted.size());
-    long bytesRemaining = maxSizeBytes - oldFile.length();
+    long bytesRemaining = 0;
+    try {
+      bytesRemaining = maxSizeBytes - Files.size(oldFile);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
     for (QualifiedRecommendation originalRecommendation : sorted) {
       if (!originalRecommendation.getRecommendation().uncompressOldEntry) {
         // Keep the original recommendation, no need to track size since it won't be uncompressed.

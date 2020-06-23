@@ -349,9 +349,9 @@ public interface RandomAccessObject extends DataInput, DataOutput, Closeable {
     private final File mFile;
     private final FileChannel mFileChannel;
 
-    public RandomAccessMmapObject(final RandomAccessFile randomAccessFile, String mode)
+    public RandomAccessMmapObject(final FileChannel randomAccessFile, String mode)
         throws IOException, IllegalArgumentException {
-      if (randomAccessFile.length() > Integer.MAX_VALUE) {
+      if (randomAccessFile.size() > Integer.MAX_VALUE) {
         throw new IllegalArgumentException("Only files up to 2GiB in size are supported.");
       }
 
@@ -362,8 +362,8 @@ public interface RandomAccessObject extends DataInput, DataOutput, Closeable {
         mapMode = FileChannel.MapMode.READ_WRITE;
       }
 
-      mFileChannel = randomAccessFile.getChannel();
-      mByteBuffer = mFileChannel.map(mapMode, 0, randomAccessFile.length());
+      mFileChannel = randomAccessFile;
+      mByteBuffer = mFileChannel.map(mapMode, 0, randomAccessFile.size());
       mByteBuffer.position(0);
       mShouldDeleteFileOnRelease = false;
       mFile = null;

@@ -17,12 +17,10 @@ package com.google.archivepatcher.generator;
 import com.google.archivepatcher.shared.JreDeflateParameters;
 import com.google.archivepatcher.shared.PatchConstants;
 import com.google.archivepatcher.shared.TypedRange;
-import java.io.BufferedInputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 /**
  * Writes patches.
@@ -47,7 +45,7 @@ public class PatchWriter {
   /**
    * The delta that transforms the old delta-friendly file into the new delta-friendly file.
    */
-  private final File deltaFile;
+  private final Path deltaFile;
 
   /**
    * Creates a new patch writer.
@@ -65,7 +63,7 @@ public class PatchWriter {
       PreDiffPlan plan,
       long deltaFriendlyOldFileSize,
       long deltaFriendlyNewFileSize,
-      File deltaFile) {
+      Path deltaFile) {
     this.plan = plan;
     this.deltaFriendlyOldFileSize = deltaFriendlyOldFileSize;
     this.deltaFriendlyNewFileSize = deltaFriendlyNewFileSize;
@@ -124,9 +122,9 @@ public class PatchWriter {
     dataOut.writeLong(deltaFriendlyNewFileSize); // i.e., length of the working range in new
 
     // Finally, the length of the delta and the delta itself.
-    dataOut.writeLong(deltaFile.length());
-    try (FileInputStream deltaFileIn = new FileInputStream(deltaFile);
-        BufferedInputStream deltaIn = new BufferedInputStream(deltaFileIn)) {
+    dataOut.writeLong(Files.size(deltaFile));
+    try (InputStream deltaFileIn = Files.newInputStream(deltaFile);
+         BufferedInputStream deltaIn = new BufferedInputStream(deltaFileIn)) {
       byte[] buffer = new byte[32768];
       int numRead = 0;
       while ((numRead = deltaIn.read(buffer)) >= 0) {

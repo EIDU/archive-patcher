@@ -16,6 +16,7 @@ package com.google.archivepatcher.shared;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 
 /**
  * An implementation of {@link MultiViewInputStreamFactory} that produces instances of {@link
@@ -24,17 +25,17 @@ import java.io.IOException;
 public class RandomAccessFileInputStreamFactory implements MultiViewInputStreamFactory {
 
   /**
-   * Argument for {@link RandomAccessFileInputStream#RandomAccessFileInputStream(File, long, long)}.
+   * Argument for {@link RandomAccessFileInputStream#RandomAccessFileInputStream(Path, long, long)}.
    */
-  private final File file;
+  private final Path file;
 
   /**
-   * Argument for {@link RandomAccessFileInputStream#RandomAccessFileInputStream(File, long, long)}.
+   * Argument for {@link RandomAccessFileInputStream#RandomAccessFileInputStream(Path, long, long)}.
    */
   private final long rangeOffset;
 
   /**
-   * Argument for {@link RandomAccessFileInputStream#RandomAccessFileInputStream(File, long, long)}.
+   * Argument for {@link RandomAccessFileInputStream#RandomAccessFileInputStream(Path, long, long)}.
    */
   private final long rangeLength;
 
@@ -45,7 +46,7 @@ public class RandomAccessFileInputStreamFactory implements MultiViewInputStreamF
    * @param rangeOffset the range offset to use in {@link #newStream()}
    * @param rangeLength the range length to use in {@link #newStream()}
    */
-  public RandomAccessFileInputStreamFactory(File file, long rangeOffset, long rangeLength) {
+  public RandomAccessFileInputStreamFactory(Path file, long rangeOffset, long rangeLength) {
     this.file = file;
     this.rangeOffset = rangeOffset;
     this.rangeLength = rangeLength;

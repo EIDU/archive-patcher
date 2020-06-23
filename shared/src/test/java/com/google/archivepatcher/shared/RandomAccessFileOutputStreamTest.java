@@ -21,11 +21,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.RandomAccessFile;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 /**
  * Tests for {@link RandomAccessFileOutputStream}.
@@ -46,7 +44,7 @@ public class RandomAccessFileOutputStreamTest {
   /**
    * The temp file.
    */
-  private File tempFile = null;
+  private Path tempFile = null;
 
   @Before
   public void setup() throws IOException {
@@ -54,8 +52,7 @@ public class RandomAccessFileOutputStreamTest {
     for (int x = 0; x < 128; x++) {
       testData[x] = (byte) x;
     }
-    tempFile = File.createTempFile("ra-fost", "tmp");
-    tempFile.deleteOnExit();
+    tempFile = Files.createTempFile("ra-fost", "tmp");
   }
 
   @After
@@ -66,7 +63,7 @@ public class RandomAccessFileOutputStreamTest {
       // Nothing to do
     }
     try {
-      tempFile.delete();
+      Files.deleteIfExists(tempFile);
     } catch (Exception ignored) {
       // Nothing to do
     }
@@ -75,23 +72,7 @@ public class RandomAccessFileOutputStreamTest {
   @Test
   public void testCreateAndSize() throws IOException {
     stream = new RandomAccessFileOutputStream(tempFile, 11L);
-    Assert.assertEquals(11, tempFile.length());
-  }
-
-  @Test(expected = IOException.class)
-  public void testCreateAndFailToSize() throws IOException {
-    stream =
-        new RandomAccessFileOutputStream(tempFile, 11L) {
-          @Override
-          protected RandomAccessFile getRandomAccessFile(File file) throws IOException {
-            return new RandomAccessFile(file, "rw") {
-              @Override
-              public void setLength(long newLength) throws IOException {
-                // Do nothing, to trigger failure case in the constructor.
-              }
-            };
-          }
-        };
+    Assert.assertEquals(11, Files.size(tempFile));
   }
 
   @Test
@@ -100,9 +81,9 @@ public class RandomAccessFileOutputStreamTest {
     stream.write(7);
     stream.flush();
     stream.close();
-    FileInputStream in = null;
+    InputStream in = null;
     try {
-      in = new FileInputStream(tempFile);
+      in = Files.newInputStream(tempFile);
       Assert.assertEquals(7, in.read());
     } finally {
       try {
@@ -119,10 +100,10 @@ public class RandomAccessFileOutputStreamTest {
     stream.write(testData, 0, testData.length);
     stream.flush();
     stream.close();
-    FileInputStream in = null;
+    InputStream in = null;
     DataInputStream dataIn = null;
     try {
-      in = new FileInputStream(tempFile);
+      in = Files.newInputStream(tempFile);
       dataIn = new DataInputStream(in);
       byte[] actual = new byte[testData.length];
       dataIn.readFully(actual);

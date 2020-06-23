@@ -22,6 +22,7 @@ import com.google.archivepatcher.shared.RandomAccessFileInputStreamFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -88,7 +89,7 @@ public class DefaultDeflateCompressionDiviner {
    * @throws IOException if unable to read or parse the file
    * @see DivinationResult 
    */
-  public List<DivinationResult> divineDeflateParameters(File archiveFile) throws IOException {
+  public List<DivinationResult> divineDeflateParameters(Path archiveFile) throws IOException {
     List<DivinationResult> results = new ArrayList<>();
     for (MinimalZipEntry minimalZipEntry : MinimalZipArchive.listEntries(archiveFile)) {
       JreDeflateParameters divinedParameters = null;

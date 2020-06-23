@@ -15,6 +15,9 @@
 package com.google.archivepatcher.tools;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Iterator;
 
 /**
@@ -44,9 +47,9 @@ public abstract class AbstractTool {
    * @param description what the file represents, for error messages
    * @return a {@link File} representing the path, which exists and is readable
    */
-  protected File getRequiredFileOrDie(String path, String description) {
-    File result = new File(path);
-    if (!result.exists() || !result.canRead()) {
+  protected Path getRequiredFileOrDie(String path, String description) {
+    Path result = Paths.get(path);
+    if (!Files.exists(result) || !Files.isReadable(result)) {
       exitWithUsage(description + " does not exist or cannot be read: " + path);
     }
     return result;

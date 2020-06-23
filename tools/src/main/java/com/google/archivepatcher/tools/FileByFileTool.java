@@ -19,12 +19,11 @@ import com.google.archivepatcher.generator.DeltaFriendlyOldBlobSizeLimiter;
 import com.google.archivepatcher.generator.FileByFileV1DeltaGenerator;
 import com.google.archivepatcher.generator.RecommendationModifier;
 import com.google.archivepatcher.generator.TotalRecompressionLimiter;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -150,18 +149,18 @@ public class FileByFileTool extends AbstractTool {
     if (mode == Mode.APPLY && deltaFriendlyOldBlobSizeLimit != null) {
       exitWithUsage("--dfobsl can only be used with --generate");
     }
-    File oldFile = getRequiredFileOrDie(oldPath, "old file");
+    Path oldFile = getRequiredFileOrDie(oldPath, "old file");
     if (mode == Mode.GENERATE) {
-      File newFile = getRequiredFileOrDie(newPath, "new file");
+      Path newFile = getRequiredFileOrDie(newPath, "new file");
       generatePatch(
           oldFile,
           newFile,
-          new File(patchPath),
+          Paths.get(patchPath),
           totalRecompressionLimit,
           deltaFriendlyOldBlobSizeLimit);
     } else { // mode == Mode.APPLY
-      File patchFile = getRequiredFileOrDie(patchPath, "patch file");
-      applyPatch(oldFile, patchFile, new File(newPath));
+      Path patchFile = getRequiredFileOrDie(patchPath, "patch file");
+      applyPatch(oldFile, patchFile, Paths.get(newPath));
     }
   }
 
@@ -179,9 +178,9 @@ public class FileByFileTool extends AbstractTool {
    * @throws InterruptedException if any thread has interrupted the current thread
    */
   public static void generatePatch(
-      File oldFile,
-      File newFile,
-      File patchFile,
+      Path oldFile,
+      Path newFile,
+      Path patchFile,
       Long totalRecompressionLimit,
       Long deltaFriendlyOldBlobSizeLimit)
       throws IOException, InterruptedException {
@@ -196,7 +195,7 @@ public class FileByFileTool extends AbstractTool {
     FileByFileV1DeltaGenerator generator =
         new FileByFileV1DeltaGenerator(
             recommendationModifiers.toArray(new RecommendationModifier[] {}));
-    try (FileOutputStream patchOut = new FileOutputStream(patchFile);
+    try (OutputStream patchOut = Files.newOutputStream(patchFile);
         BufferedOutputStream bufferedPatchOut = new BufferedOutputStream(patchOut)) {
       generator.generateDelta(oldFile, newFile, bufferedPatchOut);
       bufferedPatchOut.flush();
@@ -210,16 +209,16 @@ public class FileByFileTool extends AbstractTool {
    * @param newFile the new file (will be written)
    * @throws IOException if anything goes wrong
    */
-  public static void applyPatch(File oldFile, File patchFile, File newFile) throws IOException {
+  public static void applyPatch(Path oldFile, Path patchFile, Path newFile) throws IOException {
     // Figure out temp directory
-    File tempFile = File.createTempFile("fbftool", "tmp");
-    File tempDir = tempFile.getParentFile();
-    tempFile.delete();
+    Path tempFile = Files.createTempFile("fbftool", "tmp");
+    Path tempDir = tempFile.getParent();
+    Files.deleteIfExists(tempFile);
     FileByFileV1DeltaApplier applier = new FileByFileV1DeltaApplier(tempDir);
-    try (FileInputStream patchIn = new FileInputStream(patchFile);
-        BufferedInputStream bufferedPatchIn = new BufferedInputStream(patchIn);
-        FileOutputStream newOut = new FileOutputStream(newFile);
-        BufferedOutputStream bufferedNewOut = new BufferedOutputStream(newOut)) {
+    try (InputStream patchIn = Files.newInputStream(patchFile);
+         BufferedInputStream bufferedPatchIn = new BufferedInputStream(patchIn);
+         OutputStream newOut = Files.newOutputStream(newFile);
+         BufferedOutputStream bufferedNewOut = new BufferedOutputStream(newOut)) {
       applier.applyDelta(oldFile, bufferedPatchIn, bufferedNewOut);
       bufferedNewOut.flush();
     }

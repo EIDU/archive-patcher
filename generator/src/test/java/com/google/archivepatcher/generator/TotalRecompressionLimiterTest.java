@@ -16,6 +16,7 @@ package com.google.archivepatcher.generator;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -31,8 +32,8 @@ import org.junit.runners.JUnit4;
 @SuppressWarnings("javadoc")
 public class TotalRecompressionLimiterTest {
 
-  private static final File OLD_FILE = null;
-  private static final File NEW_FILE = null;
+  private static final Path OLD_FILE = null;
+  private static final Path NEW_FILE = null;
 
   private static final MinimalZipEntry UNIMPORTANT = makeFakeEntry("/unimportant", 1337);
   private static final MinimalZipEntry ENTRY_A_100K = makeFakeEntry("/a/100k", 100 * 1024);

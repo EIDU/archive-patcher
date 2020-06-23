@@ -15,8 +15,9 @@
 package com.google.archivepatcher.generator;
 
 import java.io.Closeable;
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 /**
  * A closeable container for a temp file that deletes itself on {@link #close()}. This is convenient
@@ -26,7 +27,7 @@ public class TempFileHolder implements Closeable {
   /**
    * The file that is wrapped by this holder.
    */
-  public final File file;
+  public final Path file;
 
   /**
    * Create a new temp file and wrap it in an instance of this class. The file is automatically
@@ -35,12 +36,17 @@ public class TempFileHolder implements Closeable {
    * @throws IOException if unable to create the file
    */
   public TempFileHolder() throws IOException {
-    file = File.createTempFile("archive_patcher", "tmp");
-    file.deleteOnExit();
+    file = Files.createTempFile("archive_patcher", "tmp");
   }
 
   @Override
   public void close() throws IOException {
-    file.delete();
+    Files.deleteIfExists(file);
+  }
+
+  @Override
+  protected void finalize() throws Throwable {
+    close();
+    super.finalize();
   }
 }

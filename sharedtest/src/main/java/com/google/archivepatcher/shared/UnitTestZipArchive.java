@@ -16,12 +16,9 @@ package com.google.archivepatcher.shared;
 
 import org.junit.Assert;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -211,8 +208,8 @@ public class UnitTestZipArchive {
    * @param file the file to write to
    * @throws IOException if unable to write the file
    */
-  public static void saveTestZip(File file) throws IOException {
-    FileOutputStream out = new FileOutputStream(file);
+  public static void saveTestZip(Path file) throws IOException {
+    OutputStream out = Files.newOutputStream(file);
     out.write(makeTestZip());
     out.flush();
     out.close();

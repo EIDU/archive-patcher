@@ -21,6 +21,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * Applies V1 patches.
@@ -35,11 +38,11 @@ public class FileByFileV1DeltaApplier implements DeltaApplier {
   /**
    * The temp directory to use.
    */
-  private final File tempDir;
+  private final Path tempDir;
 
   /**
    * Creates a new delta applier that will use the default temp directory for working files. This is
-   * equivalent to calling {@link #FileByFileV1DeltaApplier(File)} with a <code>null</code> file
+   * equivalent to calling {@link #FileByFileV1DeltaApplier(Path)} with a <code>null</code> file
    * argument.
    */
   public FileByFileV1DeltaApplier() {
@@ -52,26 +55,26 @@ public class FileByFileV1DeltaApplier implements DeltaApplier {
    * @param tempDir a temp directory where the delta-friendly old blob can be written during the
    *     patch application process; if null, the system's default temporary directory is used
    */
-  public FileByFileV1DeltaApplier(File tempDir) {
+  public FileByFileV1DeltaApplier(Path tempDir) {
     if (tempDir == null) {
-      tempDir = new File(System.getProperty("java.io.tmpdir"));
+      tempDir = Paths.get(System.getProperty("java.io.tmpdir"));
     }
     this.tempDir = tempDir;
   }
 
   @Override
-  public void applyDelta(File oldBlob, InputStream deltaIn, OutputStream newBlobOut)
+  public void applyDelta(Path oldBlob, InputStream deltaIn, OutputStream newBlobOut)
       throws IOException {
-    if (!tempDir.exists()) {
+    if (!Files.exists(tempDir)) {
       // Be nice, try to create the temp directory. Don't bother to check return value as the code
       // will fail when it tries to create the file in a few more lines anyways.
-      tempDir.mkdirs();
+      Files.createDirectories(tempDir);
     }
-    File tempFile = File.createTempFile("gfbfv1", "old", tempDir);
+    Path tempFile = Files.createTempFile(tempDir, "gfbfv1", "old");
     try {
       applyDeltaInternal(oldBlob, tempFile, deltaIn, newBlobOut);
     } finally {
-      tempFile.delete();
+      Files.deleteIfExists(tempFile);
     }
   }
 
@@ -84,7 +87,7 @@ public class FileByFileV1DeltaApplier implements DeltaApplier {
    * @throws IOException if anything goes wrong
    */
   private void applyDeltaInternal(
-      File oldBlob, File deltaFriendlyOldBlob, InputStream deltaIn, OutputStream newBlobOut)
+      Path oldBlob, Path deltaFriendlyOldBlob, InputStream deltaIn, OutputStream newBlobOut)
       throws IOException {
 
     // First, read the patch plan from the patch stream.
@@ -118,7 +121,7 @@ public class FileByFileV1DeltaApplier implements DeltaApplier {
    * @throws IOException if anything goes wrong
    */
   private void writeDeltaFriendlyOldBlob(
-      PatchApplyPlan plan, File oldBlob, File deltaFriendlyOldBlob) throws IOException {
+      PatchApplyPlan plan, Path oldBlob, Path deltaFriendlyOldBlob) throws IOException {
     RandomAccessFileOutputStream deltaFriendlyOldFileOut = null;
     try {
       deltaFriendlyOldFileOut =

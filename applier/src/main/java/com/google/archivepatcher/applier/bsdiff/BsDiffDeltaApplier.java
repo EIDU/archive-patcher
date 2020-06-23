@@ -21,6 +21,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
+import java.nio.channels.FileChannel;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 
 /**
  * An implementation of {@link DeltaApplier} that uses {@link BsPatch} to apply a bsdiff patch.
@@ -28,11 +31,11 @@ import java.io.RandomAccessFile;
 public class BsDiffDeltaApplier implements DeltaApplier {
 
   @Override
-  public void applyDelta(File oldBlob, InputStream deltaIn, OutputStream newBlobOut)
+  public void applyDelta(Path oldBlob, InputStream deltaIn, OutputStream newBlobOut)
       throws IOException {
-    RandomAccessFile oldBlobRaf = null;
+    FileChannel oldBlobRaf = null;
     try {
-      oldBlobRaf = new RandomAccessFile(oldBlob, "r");
+      oldBlobRaf = FileChannel.open(oldBlob, StandardOpenOption.READ);
       BsPatch.applyPatch(oldBlobRaf, newBlobOut, deltaIn);
     } finally {
       try {

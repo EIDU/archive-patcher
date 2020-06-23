@@ -27,6 +27,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.nio.file.Path;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -130,8 +131,8 @@ public class PatchExplainerTool extends AbstractTool {
     if (oldPath == null || newPath == null) {
       exitWithUsage("missing required argument(s)");
     }
-    File oldFile = getRequiredFileOrDie(oldPath, "old file");
-    File newFile = getRequiredFileOrDie(newPath, "new file");
+    Path oldFile = getRequiredFileOrDie(oldPath, "old file");
+    Path newFile = getRequiredFileOrDie(newPath, "new file");
     DeflateCompressor compressor = new DeflateCompressor();
     compressor.setCaching(true);
     compressor.setCompressionLevel(9);
