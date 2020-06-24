@@ -28,6 +28,8 @@ public class TempFileHolder implements Closeable {
    */
   public final File file;
 
+  static File tempDir = null;
+
   /**
    * Create a new temp file and wrap it in an instance of this class. The file is automatically
    * scheduled for deletion on JVM termination, so it is a serious error to rely on this file path
@@ -35,8 +37,14 @@ public class TempFileHolder implements Closeable {
    * @throws IOException if unable to create the file
    */
   public TempFileHolder() throws IOException {
-    file = File.createTempFile("archive_patcher", "tmp");
+    file = tempDir != null ?
+            File.createTempFile("archive_patcher", "tmp", tempDir) :
+            File.createTempFile("archive_patcher", "tmp");
     file.deleteOnExit();
+  }
+
+  public static void setTempDir(File newTempDir) {
+    tempDir = newTempDir;
   }
 
   @Override
