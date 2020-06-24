@@ -15,6 +15,20 @@ plugins {
 apply plugin: 'java'
 apply plugin: 'maven-publish'
 
+File localPropertiesFile = project.rootProject.file('local.properties')
+Properties localProperties = new Properties()
+if (localPropertiesFile.canRead())
+    localProperties.load(localPropertiesFile.newDataInputStream())
+
+def gitHash = { ->
+    def stdout = new ByteArrayOutputStream()
+    exec {
+        commandLine 'git', 'rev-parse', '--short', 'HEAD'
+        standardOutput = stdout
+    }
+    return stdout.toString().trim()
+}
+
 version = 1.0
 
 subprojects.each { subproject -> evaluationDependsOn( subproject.path ) }
@@ -77,31 +91,22 @@ artifacts {
 }
 
 publishing {
-    publications {
-        MyPublication(MavenPublication) {
-            from components.java
-            groupId 'com.google'
-            artifactId 'archivepatcher'
-            version version
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/EIDU/archive-patcher")
+            credentials {
+                username = System.getenv("GITHUB_USER") ?: localProperties.getProperty("githubUser")
+                password = System.getenv("GITHUB_TOKEN") ?: localProperties.getProperty("githubToken")
+            }
         }
     }
-}
-
-bintray {
-    user = System.getenv('BINTRAY_USER')
-    key = System.getenv('BINTRAY_KEY')
-    publications = ['MyPublication']
-    filesSpec {
-        from 'build/libs'
-        into '/'
-    }
-    pkg {
-        repo = 'Maven'
-        name = 'archive-patcher'
-        desc = 'Archive Patcher'
-        licenses = ['Apache-2.0']
-        websiteUrl = 'https://github.com/andrewhayden/archive-patcher'
-        issueTrackerUrl = 'https://github.com/andrewhayden/archive-patcher/issues'
-        vcsUrl = 'https://github.com/andrewhayden/archive-patcher.git'
+    publications {
+        gpr(MavenPublication) {
+            from components.java
+            groupId 'com.eidu'
+            artifactId 'archive-patcher'
+            version gitHash()
+        }
     }
 }
