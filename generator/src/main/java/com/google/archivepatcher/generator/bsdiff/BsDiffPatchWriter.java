@@ -342,9 +342,9 @@ public class BsDiffPatchWriter {
     try (FileChannel oldDataRAF = FileChannel.open(oldData, StandardOpenOption.READ);
          FileChannel newDataRAF = FileChannel.open(newData, StandardOpenOption.READ);
          RandomAccessObject oldDataRAO =
-            new RandomAccessObject.RandomAccessMmapObject(oldDataRAF, "r");
+            RandomAccessObjectFactory.RandomAccessMmapObjectFactory.create(oldDataRAF, "r");
          RandomAccessObject newDataRAO =
-            new RandomAccessObject.RandomAccessMmapObject(newDataRAF, "r"); ) {
+            RandomAccessObjectFactory.RandomAccessMmapObjectFactory.create(newDataRAF, "r"); ) {
       generatePatch(
           oldDataRAO,
           newDataRAO,

@@ -21,6 +21,7 @@ import com.google.archivepatcher.generator.bsdiff.RandomAccessObject.RandomAcces
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.channels.FileChannel;
 
 /**
  * A factory for creating instances of {@link RandomAccessObject}. BsDiff needs to store some
@@ -103,7 +104,15 @@ public interface RandomAccessObjectFactory {
     // really be the responsibility of RandomAccessObject.
     @Override
     public RandomAccessObject create(int size) throws IOException {
+      // Note: This WILL create a file on disk, even if everything else is done on an in-memory file system.
       return new RandomAccessObject.RandomAccessMmapObject(FILE_NAME_PREFIX, mMode, size);
+    }
+
+    public static RandomAccessObject create(FileChannel channel, String mode) throws IOException {
+      if (channel.getClass().getName().equals("com.google.common.jimfs.JimfsFileChannel"))
+        return new FileChannelRandomAccessObject(channel);
+      else
+        return new RandomAccessObject.RandomAccessMmapObject(channel, mode);
     }
   }
 }
