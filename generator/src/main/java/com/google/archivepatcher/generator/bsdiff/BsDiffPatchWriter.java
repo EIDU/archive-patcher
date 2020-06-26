@@ -349,7 +349,7 @@ public class BsDiffPatchWriter {
           oldDataRAO,
           newDataRAO,
           outputStream,
-          new RandomAccessObjectFactory.RandomAccessMmapObjectFactory("rw"),
+          new RandomAccessObjectFactory.RandomAccessByteArrayObjectFactory(),
           minimumMatchLength);
     }
 
