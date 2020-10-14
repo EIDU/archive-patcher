@@ -24,9 +24,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.CRC32;
@@ -68,9 +69,10 @@ public class MinimalZipParserTest {
     // Create a temp file with some zeroes, the EOCD header, and more zeroes.
     int bytesBefore = 53754;
     int bytesAfter = 107;
-    Path tempFile = Files.createTempFile("MinimalZipParserTest", "zip");
+    File tempFile = File.createTempFile("MinimalZipParserTest", "zip");
+    tempFile.deleteOnExit();
     try {
-      OutputStream out = Files.newOutputStream(tempFile);
+      FileOutputStream out = new FileOutputStream(tempFile);
       out.write(new byte[bytesBefore]);
       out.write(new byte[] {0x50, 0x4b, 0x05, 0x06});
       out.write(new byte[bytesAfter]);
@@ -78,7 +80,7 @@ public class MinimalZipParserTest {
       out.close();
     } catch (IOException e) {
       try {
-        Files.deleteIfExists(tempFile);
+        tempFile.delete();
       } catch (Exception ignored) {
         // Nothing
       }
@@ -95,15 +97,16 @@ public class MinimalZipParserTest {
   @Test
   public void testLocateStartOfEocd_WithFile_NoEocd() throws IOException {
     // Create a temp file with some zeroes and no EOCD header at all
-    Path tempFile = Files.createTempFile("MinimalZipParserTest", "zip");
+    File tempFile = File.createTempFile("MinimalZipParserTest", "zip");
+    tempFile.deleteOnExit();
     try {
-      OutputStream out = Files.newOutputStream(tempFile);
+      FileOutputStream out = new FileOutputStream(tempFile);
       out.write(new byte[4000]);
       out.flush();
       out.close();
     } catch (IOException e) {
       try {
-        Files.deleteIfExists(tempFile);
+        tempFile.delete();
       } catch (Exception ignored) {
         // Nothing
       }

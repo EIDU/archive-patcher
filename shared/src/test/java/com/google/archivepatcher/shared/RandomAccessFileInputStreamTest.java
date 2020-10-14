@@ -21,10 +21,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import java.io.*;
-import java.nio.channels.FileChannel;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 
 /**
  * Tests for {@link RandomAccessFileInputStream}.
@@ -45,7 +46,7 @@ public class RandomAccessFileInputStreamTest {
   /**
    * The temp file.
    */
-  private Path tempFile = null;
+  private File tempFile = null;
 
   @Before
   public void setup() throws IOException {
@@ -53,15 +54,16 @@ public class RandomAccessFileInputStreamTest {
     for (int x = 0; x < 128; x++) {
       testData[x] = (byte) x;
     }
-    tempFile = Files.createTempFile("ra-fist", "tmp");
+    tempFile = File.createTempFile("ra-fist", "tmp");
+    tempFile.deleteOnExit();
     try {
-      OutputStream out = Files.newOutputStream(tempFile);
+      FileOutputStream out = new FileOutputStream(tempFile);
       out.write(testData);
       out.flush();
       out.close();
     } catch (IOException e) {
       try {
-        Files.deleteIfExists(tempFile);
+        tempFile.delete();
       } catch (Exception ignoreD) {
         // Nothing
       }
@@ -78,7 +80,7 @@ public class RandomAccessFileInputStreamTest {
       // Nothing to do
     }
     try {
-      Files.deleteIfExists(tempFile);
+      tempFile.delete();
     } catch (Exception ignored) {
       // Nothing to do
     }
@@ -211,6 +213,28 @@ public class RandomAccessFileInputStreamTest {
   @Test(expected = IOException.class)
   public void testReset_NoMarkSet() throws IOException {
     stream.reset();
+  }
+
+  @Test
+  public void testMark_IOExceptionInRaf() throws IOException {
+    stream =
+        new RandomAccessFileInputStream(tempFile, 0, testData.length) {
+          @Override
+          protected RandomAccessFile getRandomAccessFile(File file) throws IOException {
+            return new RandomAccessFile(file, "r") {
+              @Override
+              public long getFilePointer() throws IOException {
+                throw new IOException("Blah314159");
+              }
+            };
+          }
+        };
+    try {
+      stream.mark(0);
+      Assert.fail("Executed code that should have failed.");
+    } catch (Exception e) {
+      Assert.assertEquals("Blah314159", e.getCause().getMessage());
+    }
   }
 
   @Test

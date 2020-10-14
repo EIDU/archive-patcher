@@ -25,9 +25,12 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
@@ -73,23 +76,24 @@ public class PatchWriterTest {
 
   private static final String DELTA_CONTENT = "this is a really cool delta, woo";
 
-  private Path deltaFile = null;
+  private File deltaFile = null;
 
   private ByteArrayOutputStream buffer = null;
 
   @Before
   public void setup() throws IOException {
     buffer = new ByteArrayOutputStream();
-    deltaFile = Files.createTempFile("patchwritertest", "delta");
-    try (OutputStream out = Files.newOutputStream(deltaFile)) {
+    deltaFile = File.createTempFile("patchwritertest", "delta");
+    deltaFile.deleteOnExit();
+    try (FileOutputStream out = new FileOutputStream(deltaFile)) {
       out.write(DELTA_CONTENT.getBytes());
       out.flush();
     }
   }
 
   @After
-  public void tearDown() throws IOException {
-    Files.deleteIfExists(deltaFile);
+  public void tearDown() {
+    deltaFile.delete();
   }
 
   @Test

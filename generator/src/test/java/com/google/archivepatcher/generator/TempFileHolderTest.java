@@ -21,8 +21,6 @@ import org.junit.runners.JUnit4;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 
 /**
 * Tests for {@link TempFileHolder}.
@@ -33,12 +31,12 @@ public class TempFileHolderTest {
   @Test
   public void testConstructAndClose() throws IOException {
     // Tests that a temp file can be created and that it is deleted upon close().
-    Path allocated = null;
+    File allocated = null;
     try(TempFileHolder holder = new TempFileHolder()) {
       Assert.assertNotNull(holder.file);
-      Assert.assertTrue(Files.exists(holder.file));
+      Assert.assertTrue(holder.file.exists());
       allocated = holder.file;
     }
-    Assert.assertFalse(Files.exists(allocated));
+    Assert.assertFalse(allocated.exists());
   }
 }

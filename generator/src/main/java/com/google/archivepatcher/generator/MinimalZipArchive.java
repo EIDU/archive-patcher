@@ -18,7 +18,6 @@ import com.google.archivepatcher.shared.RandomAccessFileInputStream;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -52,16 +51,16 @@ public class MinimalZipArchive {
    * @return such a listing
    * @throws IOException if anything goes wrong while reading
    */
-  public static List<MinimalZipEntry> listEntries(Path file) throws IOException {
+  public static List<MinimalZipEntry> listEntries(File file) throws IOException {
     try (RandomAccessFileInputStream in = new RandomAccessFileInputStream(file)) {
       return listEntriesInternal(in);
     }
   }
 
   /**
-   * Internal implementation of {@link #listEntries(Path)}.
+   * Internal implementation of {@link #listEntries(File)}.
    * @param in the input stream to read from
-   * @return see {@link #listEntries(Path)}
+   * @return see {@link #listEntries(File)}
    * @throws IOException if anything goes wrong while reading
    */
   private static List<MinimalZipEntry> listEntriesInternal(RandomAccessFileInputStream in)

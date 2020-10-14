@@ -17,7 +17,6 @@ package com.google.archivepatcher.shared;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,7 +45,7 @@ public class DeltaFriendlyFile {
    * @throws IOException if anything goes wrong
    */
   public static <T> List<TypedRange<T>> generateDeltaFriendlyFile(
-          List<TypedRange<T>> rangesToUncompress, Path file, OutputStream deltaFriendlyOut)
+      List<TypedRange<T>> rangesToUncompress, File file, OutputStream deltaFriendlyOut)
       throws IOException {
     return generateDeltaFriendlyFile(
         rangesToUncompress, file, deltaFriendlyOut, true, DEFAULT_COPY_BUFFER_SIZE);
@@ -75,7 +74,7 @@ public class DeltaFriendlyFile {
    */
   public static <T> List<TypedRange<T>> generateDeltaFriendlyFile(
       List<TypedRange<T>> rangesToUncompress,
-      Path file,
+      File file,
       OutputStream deltaFriendlyOut,
       boolean generateInverse,
       int copyBufferSize)

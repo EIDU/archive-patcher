@@ -56,7 +56,7 @@ public class RandomAccessObjectTest {
     File tmpFile = storeInTempFile(new ByteArrayInputStream(BLOB));
 
     try (RandomAccessObject obj =
-        new RandomAccessObject.RandomAccessMmapObject(new RandomAccessFile(tmpFile, "r").getChannel(), "r")) {
+        new RandomAccessObject.RandomAccessMmapObject(new RandomAccessFile(tmpFile, "r"), "r")) {
       Assert.assertEquals(13, obj.length());
     } finally {
       tmpFile.delete();
@@ -122,7 +122,7 @@ public class RandomAccessObjectTest {
     File tmpFile = storeInTempFile(new ByteArrayInputStream(BLOB));
 
     try (RandomAccessObject obj =
-        new RandomAccessObject.RandomAccessMmapObject(new RandomAccessFile(tmpFile, "r").getChannel(), "r")) {
+        new RandomAccessObject.RandomAccessMmapObject(new RandomAccessFile(tmpFile, "r"), "r")) {
       for (int x = 0; x < BLOB.length; x++) {
         Assert.assertEquals(x + 1, obj.readByte());
       }
@@ -225,7 +225,7 @@ public class RandomAccessObjectTest {
     File tmpFile = storeInTempFile(new ByteArrayInputStream(BLOB));
 
     try (RandomAccessObject obj =
-        new RandomAccessObject.RandomAccessMmapObject(new RandomAccessFile(tmpFile, "rw").getChannel(), "rw")) {
+        new RandomAccessObject.RandomAccessMmapObject(new RandomAccessFile(tmpFile, "rw"), "rw")) {
       for (int x = 0; x < BLOB.length; x++) {
         obj.writeByte((byte) (5 - x));
       }
@@ -259,7 +259,7 @@ public class RandomAccessObjectTest {
     File tmpFile = File.createTempFile("RandomAccessObjectTest", "temp");
 
     try (RandomAccessObject obj =
-        new RandomAccessObject.RandomAccessMmapObject(new RandomAccessFile(tmpFile, "rw").getChannel(), "rw")) {
+        new RandomAccessObject.RandomAccessMmapObject(new RandomAccessFile(tmpFile, "rw"), "rw")) {
       for (int x = 0; x < BLOB.length; x++) {
         try {
           // Writing a byte past the end of an mmap is not ok.
@@ -340,7 +340,7 @@ public class RandomAccessObjectTest {
 
     try {
       RandomAccessObject obj =
-          new RandomAccessObject.RandomAccessMmapObject(new RandomAccessFile(tmpFile, "rw").getChannel(), "rw");
+          new RandomAccessObject.RandomAccessMmapObject(new RandomAccessFile(tmpFile, "rw"), "rw");
       seekTest(obj);
 
       try {
@@ -397,7 +397,7 @@ public class RandomAccessObjectTest {
 
     try {
       RandomAccessObject obj =
-          new RandomAccessObject.RandomAccessMmapObject(new RandomAccessFile(tmpFile, "r").getChannel(), "r");
+          new RandomAccessObject.RandomAccessMmapObject(new RandomAccessFile(tmpFile, "r"), "r");
       readIntTest(obj);
 
       try {
@@ -449,7 +449,7 @@ public class RandomAccessObjectTest {
     File tmpFile = storeInTempFile(new ByteArrayInputStream(BLOB));
 
     try (RandomAccessObject obj =
-        new RandomAccessObject.RandomAccessMmapObject(new RandomAccessFile(tmpFile, "rw").getChannel(), "rw")) {
+        new RandomAccessObject.RandomAccessMmapObject(new RandomAccessFile(tmpFile, "rw"), "rw")) {
       for (int x = 0; x < BLOB.length / 4; x++) {
         obj.writeInt(500 + x);
       }
@@ -489,7 +489,7 @@ public class RandomAccessObjectTest {
 
     try {
       RandomAccessObject obj =
-          new RandomAccessObject.RandomAccessMmapObject(new RandomAccessFile(tmpFile, "rw").getChannel(), "rw");
+          new RandomAccessObject.RandomAccessMmapObject(new RandomAccessFile(tmpFile, "rw"), "rw");
       seekToIntAlignedTest(obj);
     } finally {
       tmpFile.delete();
@@ -540,7 +540,7 @@ public class RandomAccessObjectTest {
 
     try {
       try (RandomAccessObject obj =
-          new RandomAccessObject.RandomAccessMmapObject(new RandomAccessFile(tmpFile, "r").getChannel(), "r")) {}
+          new RandomAccessObject.RandomAccessMmapObject(new RandomAccessFile(tmpFile, "r"), "r")) {}
       Assert.assertTrue(tmpFile.exists());
     } finally {
       tmpFile.delete();

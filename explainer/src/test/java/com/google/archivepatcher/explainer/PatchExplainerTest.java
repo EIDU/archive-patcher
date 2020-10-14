@@ -25,12 +25,13 @@ import com.google.archivepatcher.shared.UnitTestZipArchive;
 import com.google.archivepatcher.shared.UnitTestZipEntry;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import org.junit.After;
@@ -105,16 +106,16 @@ public class PatchExplainerTest {
     }
 
     @Override
-    public void generateDelta(Path oldBlob, Path newBlob, OutputStream deltaOut)
+    public void generateDelta(File oldBlob, File newBlob, OutputStream deltaOut)
         throws IOException {
       assertFileEquals(oldBlob, expectedOld);
       assertFileEquals(newBlob, expectedNew);
       deltaOut.write(OUTPUT.getBytes("US-ASCII"));
     }
 
-    private final void assertFileEquals(Path file, byte[] expected) throws IOException {
-      byte[] actual = new byte[(int) Files.size(file)];
-      try (InputStream fileIn = Files.newInputStream(file);
+    private final void assertFileEquals(File file, byte[] expected) throws IOException {
+      byte[] actual = new byte[(int) file.length()];
+      try (FileInputStream fileIn = new FileInputStream(file);
           DataInputStream dataIn = new DataInputStream(fileIn)) {
         dataIn.readFully(actual);
       }
@@ -125,31 +126,31 @@ public class PatchExplainerTest {
   /**
    * Temporary old file.
    */
-  private Path oldFile = null;
+  private File oldFile = null;
 
   /**
    * Temporary new file.
    */
-  private Path newFile = null;
+  private File newFile = null;
 
   @Before
   public void setup() throws IOException {
-    oldFile = Files.createTempFile("patchexplainertest", "old");
-    newFile = Files.createTempFile("patchexplainertest", "new");
+    oldFile = File.createTempFile("patchexplainertest", "old");
+    newFile = File.createTempFile("patchexplainertest", "new");
   }
 
   @After
   public void tearDown() {
     if (oldFile != null) {
       try {
-        Files.deleteIfExists(oldFile);
+        oldFile.delete();
       } catch (Exception ignored) {
         // Nothing
       }
     }
     if (newFile != null) {
       try {
-        Files.deleteIfExists(newFile);
+        newFile.delete();
       } catch (Exception ignored) {
         // Nothing
       }
@@ -414,8 +415,8 @@ public class PatchExplainerTest {
    * @param file the file to save to
    * @throws IOException if saving fails
    */
-  private static void save(byte[] data, Path file) throws IOException {
-    try (OutputStream out = Files.newOutputStream(file)) {
+  private static void save(byte[] data, File file) throws IOException {
+    try (FileOutputStream out = new FileOutputStream(file)) {
       out.write(data);
       out.flush();
     }

@@ -15,7 +15,6 @@
 package com.google.archivepatcher.generator.similarity;
 
 import java.io.File;
-import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 
@@ -29,7 +28,7 @@ public abstract class SimilarityFinder {
   /**
    * The base archive that contains the entries to be searched.
    */
-  protected final Path baseArchive;
+  protected final File baseArchive;
 
   /**
    * The entries in the base archive that are eligible to be searched.
@@ -42,7 +41,7 @@ public abstract class SimilarityFinder {
    * @param baseArchive the base archive that contains the entries to be scored against
    * @param baseEntries the entries in the base archive that are eligible to be scored against.
    */
-  public SimilarityFinder(Path baseArchive, Collection<MinimalZipEntry> baseEntries) {
+  public SimilarityFinder(File baseArchive, Collection<MinimalZipEntry> baseEntries) {
     this.baseArchive = baseArchive;
     this.baseEntries = baseEntries;
   }
@@ -56,5 +55,5 @@ public abstract class SimilarityFinder {
    * the base archive that are similar to the new archive; if the list has more than one entry, the
    * entries should be in order from most similar to least similar.
    */
-  public abstract List<MinimalZipEntry> findSimilarFiles(Path newArchive, MinimalZipEntry newEntry);
+  public abstract List<MinimalZipEntry> findSimilarFiles(File newArchive, MinimalZipEntry newEntry);
 }

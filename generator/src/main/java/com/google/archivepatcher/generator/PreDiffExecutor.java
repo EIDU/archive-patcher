@@ -18,10 +18,10 @@ import com.google.archivepatcher.generator.DefaultDeflateCompressionDiviner.Divi
 import com.google.archivepatcher.shared.DeltaFriendlyFile;
 import com.google.archivepatcher.shared.JreDeflateParameters;
 import com.google.archivepatcher.shared.TypedRange;
-
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -35,10 +35,10 @@ public class PreDiffExecutor {
 
   /** A helper class to build a {@link PreDiffExecutor} with a variety of configurations. */
   public static final class Builder {
-    private Path originalOldFile;
-    private Path originalNewFile;
-    private Path deltaFriendlyOldFile;
-    private Path deltaFriendlyNewFile;
+    private File originalOldFile;
+    private File originalNewFile;
+    private File deltaFriendlyOldFile;
+    private File deltaFriendlyNewFile;
     private List<RecommendationModifier> recommendationModifiers =
         new ArrayList<RecommendationModifier>();
 
@@ -50,7 +50,7 @@ public class PreDiffExecutor {
      * @param originalNewFile the original new file to read (will not be modified).
      * @return this builder
      */
-    public Builder readingOriginalFiles(Path originalOldFile, Path originalNewFile) {
+    public Builder readingOriginalFiles(File originalOldFile, File originalNewFile) {
       if (originalOldFile == null || originalNewFile == null) {
         throw new IllegalStateException("do not set nul original input files");
       }
@@ -67,7 +67,7 @@ public class PreDiffExecutor {
      * @param deltaFriendlyNewFile the intermediate file to write (will be overwritten if it exists)
      * @return this builder
      */
-    public Builder writingDeltaFriendlyFiles(Path deltaFriendlyOldFile, Path deltaFriendlyNewFile) {
+    public Builder writingDeltaFriendlyFiles(File deltaFriendlyOldFile, File deltaFriendlyNewFile) {
       if (deltaFriendlyOldFile == null || deltaFriendlyNewFile == null) {
         throw new IllegalStateException("do not set null delta-friendly files");
       }
@@ -111,22 +111,22 @@ public class PreDiffExecutor {
   }
 
   /** The original old file to read (will not be modified). */
-  private final Path originalOldFile;
+  private final File originalOldFile;
 
   /** The original new file to read (will not be modified). */
-  private final Path originalNewFile;
+  private final File originalNewFile;
 
   /**
    * Optional file to write the delta-friendly version of the original old file to (will be created,
    * overwriting if it already exists). If null, only the read-only planning step can be performed.
    */
-  private final Path deltaFriendlyOldFile;
+  private final File deltaFriendlyOldFile;
 
   /**
    * Optional file to write the delta-friendly version of the original new file to (will be created,
    * overwriting if it already exists). If null, only the read-only planning step can be performed.
    */
-  private final Path deltaFriendlyNewFile;
+  private final File deltaFriendlyNewFile;
 
   /**
    * Optional {@link RecommendationModifier}s to be used for modifying the patch to be generated.
@@ -135,10 +135,10 @@ public class PreDiffExecutor {
 
   /** Constructs a new PreDiffExecutor to work with the specified configuration. */
   private PreDiffExecutor(
-          Path originalOldFile,
-          Path originalNewFile,
-          Path deltaFriendlyOldFile,
-          Path deltaFriendlyNewFile,
+      File originalOldFile,
+      File originalNewFile,
+      File deltaFriendlyOldFile,
+      File deltaFriendlyNewFile,
       List<RecommendationModifier> recommendationModifiers) {
     this.originalOldFile = originalOldFile;
     this.originalNewFile = originalNewFile;
@@ -179,12 +179,12 @@ public class PreDiffExecutor {
    */
   private List<TypedRange<JreDeflateParameters>> generateDeltaFriendlyFiles(PreDiffPlan preDiffPlan)
       throws IOException {
-    try (OutputStream out = Files.newOutputStream(deltaFriendlyOldFile);
-         BufferedOutputStream bufferedOut = new BufferedOutputStream(out)) {
+    try (FileOutputStream out = new FileOutputStream(deltaFriendlyOldFile);
+        BufferedOutputStream bufferedOut = new BufferedOutputStream(out)) {
       DeltaFriendlyFile.generateDeltaFriendlyFile(
           preDiffPlan.getOldFileUncompressionPlan(), originalOldFile, bufferedOut);
     }
-    try (OutputStream out = Files.newOutputStream(deltaFriendlyNewFile);
+    try (FileOutputStream out = new FileOutputStream(deltaFriendlyNewFile);
         BufferedOutputStream bufferedOut = new BufferedOutputStream(out)) {
       return DeltaFriendlyFile.generateDeltaFriendlyFile(
           preDiffPlan.getNewFileUncompressionPlan(), originalNewFile, bufferedOut);

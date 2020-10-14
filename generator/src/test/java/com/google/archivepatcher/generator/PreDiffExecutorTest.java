@@ -16,10 +16,12 @@ package com.google.archivepatcher.generator;
 
 import com.google.archivepatcher.shared.UnitTestZipArchive;
 import com.google.archivepatcher.shared.UnitTestZipEntry;
-
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -41,22 +43,22 @@ public class PreDiffExecutorTest {
   private static final UnitTestZipEntry ENTRY_LEVEL_9 =
       UnitTestZipArchive.makeUnitTestZipEntry("/for/great/justice", 9, "entry A", null);
 
-  private List<Path> tempFilesCreated;
-  private Path deltaFriendlyOldFile;
-  private Path deltaFriendlyNewFile;
+  private List<File> tempFilesCreated;
+  private File deltaFriendlyOldFile;
+  private File deltaFriendlyNewFile;
 
   @Before
   public void setup() throws IOException {
-    tempFilesCreated = new LinkedList<>();
+    tempFilesCreated = new LinkedList<File>();
     deltaFriendlyOldFile = newTempFile();
     deltaFriendlyNewFile = newTempFile();
   }
 
   @After
   public void tearDown() {
-    for (Path file : tempFilesCreated) {
+    for (File file : tempFilesCreated) {
       try {
-        Files.deleteIfExists(file);
+        file.delete();
       } catch (Exception ignored) {
         // Nothing
       }
@@ -68,9 +70,9 @@ public class PreDiffExecutorTest {
    * @param data the bytes to store
    * @throws IOException if it fails
    */
-  private Path store(byte[] data) throws IOException {
-    Path file = newTempFile();
-    OutputStream out = Files.newOutputStream(file);
+  private File store(byte[] data) throws IOException {
+    File file = newTempFile();
+    FileOutputStream out = new FileOutputStream(file);
     out.write(data);
     out.flush();
     out.close();
@@ -82,13 +84,14 @@ public class PreDiffExecutorTest {
    * @return the file created
    * @throws IOException if anything goes wrong
    */
-  private Path newTempFile() throws IOException {
-    Path file = Files.createTempFile("pdet", "bin");
+  private File newTempFile() throws IOException {
+    File file = File.createTempFile("pdet", "bin");
     tempFilesCreated.add(file);
+    file.deleteOnExit();
     return file;
   }
 
-  private MinimalZipEntry findEntry(Path file, String path) throws IOException {
+  private MinimalZipEntry findEntry(File file, String path) throws IOException {
     List<MinimalZipEntry> entries = MinimalZipArchive.listEntries(file);
     for (MinimalZipEntry entry : entries) {
       if (path.equals(entry.getFileName())) {
@@ -99,17 +102,17 @@ public class PreDiffExecutorTest {
     return null; // Never executed
   }
 
-  private byte[] readFile(Path file) throws IOException {
-    byte[] result = new byte[(int) Files.size(file)];
-    try (InputStream fis = Files.newInputStream(file);
+  private byte[] readFile(File file) throws IOException {
+    byte[] result = new byte[(int) file.length()];
+    try (FileInputStream fis = new FileInputStream(file);
         DataInputStream dis = new DataInputStream(fis)) {
       dis.readFully(result);
     }
     return result;
   }
 
-  private void assertFileEquals(Path file1, Path file2) throws IOException {
-    Assert.assertEquals(Files.size(file1), Files.size(file2));
+  private void assertFileEquals(File file1, File file2) throws IOException {
+    Assert.assertEquals(file1.length(), file2.length());
     byte[] content1 = readFile(file1);
     byte[] content2 = readFile(file2);
     Assert.assertArrayEquals(content1, content2);
@@ -118,8 +121,8 @@ public class PreDiffExecutorTest {
   @Test
   public void testPrepareForDiffing_OneCompressedEntry_Unchanged() throws IOException {
     byte[] bytes = UnitTestZipArchive.makeTestZip(Collections.singletonList(ENTRY_LEVEL_6));
-    Path oldFile = store(bytes);
-    Path newFile = store(bytes);
+    File oldFile = store(bytes);
+    File newFile = store(bytes);
     PreDiffExecutor executor =
         new PreDiffExecutor.Builder()
             .readingOriginalFiles(oldFile, newFile)
@@ -140,9 +143,9 @@ public class PreDiffExecutorTest {
   @Test
   public void testPrepareForDiffing_OneCompressedEntry_Changed() throws IOException {
     byte[] oldBytes = UnitTestZipArchive.makeTestZip(Collections.singletonList(ENTRY_LEVEL_6));
-    Path oldFile = store(oldBytes);
+    File oldFile = store(oldBytes);
     byte[] newBytes = UnitTestZipArchive.makeTestZip(Collections.singletonList(ENTRY_LEVEL_9));
-    Path newFile = store(newBytes);
+    File newFile = store(newBytes);
     PreDiffExecutor executor =
         new PreDiffExecutor.Builder()
             .readingOriginalFiles(oldFile, newFile)
@@ -155,8 +158,8 @@ public class PreDiffExecutorTest {
     Assert.assertEquals(1, plan.getNewFileUncompressionPlan().size());
     Assert.assertEquals(1, plan.getDeltaFriendlyNewFileRecompressionPlan().size());
     // The delta-friendly files should be larger than the originals.
-    Assert.assertTrue(Files.size(oldFile) < Files.size(deltaFriendlyOldFile));
-    Assert.assertTrue(Files.size(newFile) < Files.size(deltaFriendlyNewFile));
+    Assert.assertTrue(oldFile.length() < deltaFriendlyOldFile.length());
+    Assert.assertTrue(newFile.length() < deltaFriendlyNewFile.length());
 
     // Nitty-gritty, assert that the file content is exactly what is expected.
     // 1. Find the entry in the old file.
@@ -204,9 +207,9 @@ public class PreDiffExecutorTest {
     // Like above, but this time limited by a TotalRecompressionLimiter that will prevent the
     // uncompression of the resources.
     byte[] oldBytes = UnitTestZipArchive.makeTestZip(Collections.singletonList(ENTRY_LEVEL_6));
-    Path oldFile = store(oldBytes);
+    File oldFile = store(oldBytes);
     byte[] newBytes = UnitTestZipArchive.makeTestZip(Collections.singletonList(ENTRY_LEVEL_9));
-    Path newFile = store(newBytes);
+    File newFile = store(newBytes);
     TotalRecompressionLimiter limiter = new TotalRecompressionLimiter(1); // 1 byte limitation
     PreDiffExecutor executor =
         new PreDiffExecutor.Builder()

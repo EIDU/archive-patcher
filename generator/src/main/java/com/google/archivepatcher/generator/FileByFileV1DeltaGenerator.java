@@ -20,8 +20,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -65,12 +63,12 @@ public class FileByFileV1DeltaGenerator implements DeltaGenerator {
    * @throws InterruptedException if any thread has interrupted the current thread
    */
   @Override
-  public void generateDelta(Path oldFile, Path newFile, OutputStream patchOut)
+  public void generateDelta(File oldFile, File newFile, OutputStream patchOut)
       throws IOException, InterruptedException {
     try (TempFileHolder deltaFriendlyOldFile = new TempFileHolder();
         TempFileHolder deltaFriendlyNewFile = new TempFileHolder();
         TempFileHolder deltaFile = new TempFileHolder();
-        OutputStream deltaFileOut = Files.newOutputStream(deltaFile.file);
+        FileOutputStream deltaFileOut = new FileOutputStream(deltaFile.file);
         BufferedOutputStream bufferedDeltaOut = new BufferedOutputStream(deltaFileOut)) {
       PreDiffExecutor.Builder builder =
           new PreDiffExecutor.Builder()
@@ -88,8 +86,8 @@ public class FileByFileV1DeltaGenerator implements DeltaGenerator {
       PatchWriter patchWriter =
           new PatchWriter(
               preDiffPlan,
-              Files.size(deltaFriendlyOldFile.file),
-              Files.size(deltaFriendlyNewFile.file),
+              deltaFriendlyOldFile.file.length(),
+              deltaFriendlyNewFile.file.length(),
               deltaFile.file);
       patchWriter.writeV1Patch(patchOut);
     }
@@ -104,7 +102,7 @@ public class FileByFileV1DeltaGenerator implements DeltaGenerator {
    * @throws IOException if unable to complete the operation due to an I/O error
    * @throws InterruptedException if any thread has interrupted the current thread
    */
-  public PreDiffPlan generatePreDiffPlan(Path oldFile, Path newFile)
+  public PreDiffPlan generatePreDiffPlan(File oldFile, File newFile)
       throws IOException, InterruptedException {
     try (TempFileHolder deltaFriendlyOldFile = new TempFileHolder();
         TempFileHolder deltaFriendlyNewFile = new TempFileHolder()) {

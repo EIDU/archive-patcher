@@ -17,8 +17,6 @@ package com.google.archivepatcher.generator;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -186,17 +184,18 @@ public class DeltaFriendlyOldBlobSizeLimiterTest {
     return result;
   }
 
-  private Path tempFile = null;
+  private File tempFile = null;
 
   @Before
   public void setup() throws IOException {
     // Make an empty file to test the recommender's limitation logic
-    tempFile = Files.createTempFile("DeltaFriendlyOldBlobSizeLimiterTest", "test");
+    tempFile = File.createTempFile("DeltaFriendlyOldBlobSizeLimiterTest", "test");
+    tempFile.deleteOnExit();
   }
 
   @After
-  public void tearDown() throws IOException {
-    Files.deleteIfExists(tempFile);
+  public void tearDown() {
+    tempFile.delete();
   }
 
   @Test

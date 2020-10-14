@@ -27,9 +27,6 @@ import org.junit.runners.JUnit4;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.zip.CRC32;
 
@@ -40,20 +37,21 @@ import java.util.zip.CRC32;
 @SuppressWarnings("javadoc")
 public class MinimalZipArchiveTest {
   private byte[] unitTestZipArchive;
-  private Path tempFile;
+  private File tempFile;
 
   @Before
   public void setup() throws Exception {
     unitTestZipArchive = UnitTestZipArchive.makeTestZip();
-    tempFile = Files.createTempFile("MinimalZipArchiveTest", "zip");
+    tempFile = File.createTempFile("MinimalZipArchiveTest", "zip");
+    tempFile.deleteOnExit();
     try {
-      OutputStream out = Files.newOutputStream(tempFile);
+      FileOutputStream out = new FileOutputStream(tempFile);
       out.write(unitTestZipArchive);
       out.flush();
       out.close();
     } catch (IOException e) {
       try {
-        Files.exists(tempFile);
+        tempFile.delete();
       } catch (Exception ignored) {
         // Nothing
       }
@@ -65,7 +63,7 @@ public class MinimalZipArchiveTest {
   public void tearDown() {
     if (tempFile != null) {
       try {
-        Files.deleteIfExists(tempFile);
+        tempFile.delete();
       } catch (Exception ignored) {
         // Nothing
       }

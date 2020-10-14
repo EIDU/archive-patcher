@@ -34,8 +34,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -98,7 +96,7 @@ public class PatchExplainer {
    * @throws InterruptedException if any thread interrupts this thread
    */
   public List<EntryExplanation> explainPatch(
-          Path oldFile, Path newFile, RecommendationModifier... recommendationModifiers)
+      File oldFile, File newFile, RecommendationModifier... recommendationModifiers)
       throws IOException, InterruptedException {
     List<EntryExplanation> result = new ArrayList<>();
 
@@ -187,12 +185,12 @@ public class PatchExplainer {
 
         // File is actually changed (or transitioned between compressed and uncompressed forms).
         // Generate and compress a delta.
-        try (OutputStream deltaOut = Files.newOutputStream(deltaTemp.file);
+        try (FileOutputStream deltaOut = new FileOutputStream(deltaTemp.file);
             BufferedOutputStream bufferedDeltaOut = new BufferedOutputStream(deltaOut)) {
           deltaGenerator.generateDelta(oldTemp.file, newTemp.file, bufferedDeltaOut);
           bufferedDeltaOut.flush();
           long compressedDeltaSize =
-              getCompressedSize(deltaTemp.file, 0, Files.size(deltaTemp.file), compressor);
+              getCompressedSize(deltaTemp.file, 0, deltaTemp.file.length(), compressor);
           result.add(
               new EntryExplanation(
                   new ByteArrayHolder(qualifiedRecommendation.getOldEntry().getFileNameBytes()),
@@ -214,7 +212,7 @@ public class PatchExplainer {
    * @return the size of the entry if compressed with the specified compressor
    * @throws IOException if anything goes wrong
    */
-  private long getCompressedSize(Path file, MinimalZipEntry entry, Compressor compressor)
+  private long getCompressedSize(File file, MinimalZipEntry entry, Compressor compressor)
       throws IOException {
     return getCompressedSize(
         file, entry.getFileOffsetOfCompressedData(), entry.getCompressedSize(), compressor);
@@ -230,11 +228,11 @@ public class PatchExplainer {
    * @throws IOException if anything goes wrong
    */
   private void uncompress(
-      Path source, long offset, long length, Uncompressor uncompressor, Path dest)
+      File source, long offset, long length, Uncompressor uncompressor, File dest)
       throws IOException {
     try (RandomAccessFileInputStream rafis =
             new RandomAccessFileInputStream(source, offset, length);
-        OutputStream out = Files.newOutputStream(dest);
+        FileOutputStream out = new FileOutputStream(dest);
         BufferedOutputStream bufferedOut = new BufferedOutputStream(out)) {
       uncompressor.uncompress(rafis, bufferedOut);
     }
@@ -248,10 +246,10 @@ public class PatchExplainer {
    * @param dest the file to write the uncompressed bytes to
    * @throws IOException if anything goes wrong
    */
-  private void extractCopy(Path source, long offset, long length, Path dest) throws IOException {
+  private void extractCopy(File source, long offset, long length, File dest) throws IOException {
     try (RandomAccessFileInputStream rafis =
             new RandomAccessFileInputStream(source, offset, length);
-        OutputStream out = Files.newOutputStream(dest);
+        FileOutputStream out = new FileOutputStream(dest);
         BufferedOutputStream bufferedOut = new BufferedOutputStream(out)) {
       byte[] buffer = new byte[32768];
       int numRead = 0;
@@ -271,7 +269,7 @@ public class PatchExplainer {
    * @return the size of the entry if compressed with the specified compressor
    * @throws IOException if anything goes wrong
    */
-  private long getCompressedSize(Path file, long offset, long length, Compressor compressor)
+  private long getCompressedSize(File file, long offset, long length, Compressor compressor)
       throws IOException {
     try (OutputStream sink = new NullOutputStream();
         CountingOutputStream counter = new CountingOutputStream(sink);
@@ -289,7 +287,7 @@ public class PatchExplainer {
    * @return the mapping, as described
    * @throws IOException if anything goes wrong
    */
-  private static Map<ByteArrayHolder, MinimalZipEntry> mapEntries(Path file) throws IOException {
+  private static Map<ByteArrayHolder, MinimalZipEntry> mapEntries(File file) throws IOException {
     List<MinimalZipEntry> allEntries = MinimalZipArchive.listEntries(file);
     Map<ByteArrayHolder, MinimalZipEntry> result = new HashMap<>(allEntries.size());
     for (MinimalZipEntry entry : allEntries) {

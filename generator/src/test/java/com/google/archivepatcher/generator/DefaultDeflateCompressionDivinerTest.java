@@ -25,8 +25,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
 import org.junit.Assert;
 import org.junit.Before;
@@ -109,7 +107,8 @@ public class DefaultDeflateCompressionDivinerTest {
 
   @Test
   public void testDivineDeflateParameters_File() throws IOException {
-    Path tempFile = Files.createTempFile("ddcdt", "tmp");
+    File tempFile = File.createTempFile("ddcdt", "tmp");
+    tempFile.deleteOnExit();
     try {
       UnitTestZipArchive.saveTestZip(tempFile);
       List<DivinationResult> results = diviner.divineDeflateParameters(tempFile);
@@ -134,7 +133,7 @@ public class DefaultDeflateCompressionDivinerTest {
       }
     } finally {
       try {
-        Files.deleteIfExists(tempFile);
+        tempFile.delete();
       } catch (Exception ignoreD) {
         // Nothing
       }

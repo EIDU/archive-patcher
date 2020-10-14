@@ -14,11 +14,10 @@
 
 package com.google.archivepatcher.shared;
 
-import java.io.*;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.RandomAccessFile;
 
 /**
  * An {@link OutputStream} backed by a file that will be written serially. Allows pre-allocating
@@ -26,12 +25,10 @@ import java.nio.file.StandardOpenOption;
  * to force the data to be written to the backing storage.
  */
 public class RandomAccessFileOutputStream extends OutputStream {
-  ByteBuffer singleByteBuffer = ByteBuffer.allocate(1);
-
   /**
    * The backing {@link RandomAccessFile}.
    */
-  private final FileChannel raf;
+  private final RandomAccessFile raf;
 
   /**
    * Constructs a new instance that will immediately open the specified file for writing and set
@@ -41,10 +38,14 @@ public class RandomAccessFileOutputStream extends OutputStream {
    * otherwise, the file size is not set
    * @throws IOException if unable to open the file for writing or set the size
    */
-  public RandomAccessFileOutputStream(Path outputFile, long expectedSize) throws IOException {
+  public RandomAccessFileOutputStream(File outputFile, long expectedSize) throws IOException {
     this.raf = getRandomAccessFile(outputFile);
-    raf.write(ByteBuffer.allocate((int)expectedSize));
-    raf.position(0);
+    if (expectedSize >= 0) {
+      raf.setLength(expectedSize);
+      if (raf.length() != expectedSize) {
+        throw new IOException("Unable to set the file size");
+      }
+    }
   }
 
   /**
@@ -53,15 +54,13 @@ public class RandomAccessFileOutputStream extends OutputStream {
    * @return as described
    * @throws IOException if unable to open the file
    */
-  protected FileChannel getRandomAccessFile(Path file) throws IOException {
-    return FileChannel.open(file, StandardOpenOption.READ, StandardOpenOption.WRITE);
+  protected RandomAccessFile getRandomAccessFile(File file) throws IOException {
+    return new RandomAccessFile(file, "rw");
   }
 
   @Override
   public void write(int b) throws IOException {
-    singleByteBuffer.put((byte)b);
-    singleByteBuffer.position(0);
-    raf.write(singleByteBuffer);
+    raf.write(b);
   }
 
   @Override
@@ -71,12 +70,12 @@ public class RandomAccessFileOutputStream extends OutputStream {
 
   @Override
   public void write(byte[] b, int off, int len) throws IOException {
-    raf.write(ByteBuffer.wrap(b, off, len));
+    raf.write(b, off, len);
   }
 
   @Override
   public void flush() throws IOException {
-    raf.force(true);
+    raf.getChannel().force(true);
   }
 
   @Override

@@ -18,10 +18,11 @@ import com.google.archivepatcher.applier.FileByFileV1DeltaApplier;
 import com.google.archivepatcher.generator.FileByFileV1DeltaGenerator;
 import com.google.archivepatcher.shared.UnitTestZipArchive;
 import com.google.archivepatcher.shared.UnitTestZipEntry;
-
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -40,9 +41,9 @@ import org.junit.runners.JUnit4;
 public class FileByFileV1IntegrationTest {
 
   // Inputs to the patching system
-  private Path tempDir = null;
-  private Path oldFile = null;
-  private Path newFile = null;
+  private File tempDir = null;
+  private File oldFile = null;
+  private File newFile = null;
 
   // A test archive. The contents are as follows:
   // PATH       OLD_FORMAT          NEW_FORMAT          NOTES
@@ -115,19 +116,21 @@ public class FileByFileV1IntegrationTest {
 
   @Before
   public void setUp() throws IOException {
-    oldFile = Files.createTempFile("fbf_test", "old");
-    newFile = Files.createTempFile("fbf_test", "new");
-    tempDir = oldFile.getParent();
+    oldFile = File.createTempFile("fbf_test", "old");
+    oldFile.deleteOnExit();
+    newFile = File.createTempFile("fbf_test", "new");
+    newFile.deleteOnExit();
+    tempDir = oldFile.getParentFile();
   }
 
   @After
-  public void tearDown() throws IOException {
-    Files.deleteIfExists(oldFile);
-    Files.deleteIfExists(newFile);
+  public void tearDown() {
+    oldFile.delete();
+    newFile.delete();
   }
 
-  private static void writeFile(Path file, byte[] content) throws IOException {
-    try (OutputStream out = Files.newOutputStream(file)) {
+  private static void writeFile(File file, byte[] content) throws IOException {
+    try (FileOutputStream out = new FileOutputStream(file)) {
       out.write(content);
       out.flush();
     }

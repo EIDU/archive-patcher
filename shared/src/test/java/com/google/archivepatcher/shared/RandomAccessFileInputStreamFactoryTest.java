@@ -24,9 +24,6 @@ import org.junit.runners.JUnit4;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
 
 /**
  * Tests for {@link RandomAccessFileInputStreamFactory}.
@@ -47,7 +44,7 @@ public class RandomAccessFileInputStreamFactoryTest {
   /**
    * The temp file.
    */
-  private Path tempFile = null;
+  private File tempFile = null;
 
   @Before
   public void setup() throws IOException {
@@ -55,18 +52,19 @@ public class RandomAccessFileInputStreamFactoryTest {
     for (int x = 0; x < 128; x++) {
       testData[x] = (byte) x;
     }
-    tempFile = Files.createTempFile("ra-fist", "tmp");
-    OutputStream out = Files.newOutputStream(tempFile);
+    tempFile = File.createTempFile("ra-fist", "tmp");
+    FileOutputStream out = new FileOutputStream(tempFile);
     out.write(testData);
     out.flush();
     out.close();
+    tempFile.deleteOnExit();
     factory = new RandomAccessFileInputStreamFactory(tempFile, 0, testData.length);
   }
 
   @After
   public void tearDown() {
     try {
-      Files.deleteIfExists(tempFile);
+      tempFile.delete();
     } catch (Exception ignored) {
       // Nothing to do
     }
