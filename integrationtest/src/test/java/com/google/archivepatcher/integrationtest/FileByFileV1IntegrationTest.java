@@ -26,6 +26,8 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.zip.Deflater;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -185,7 +187,7 @@ public class FileByFileV1IntegrationTest {
     generator.generateDelta(oldFile, newFile, patchBuffer);
 
     // Apply the patch.
-    FileByFileV1DeltaApplier applier = new FileByFileV1DeltaApplier(tempDir);
+    FileByFileV1DeltaApplier applier = new FileByFileV1DeltaApplier(tempDir, Deflater::new);
     ByteArrayInputStream patchIn = new ByteArrayInputStream(patchBuffer.toByteArray());
     ByteArrayOutputStream newOut = new ByteArrayOutputStream();
     applier.applyDelta(oldFile, patchIn, newOut);

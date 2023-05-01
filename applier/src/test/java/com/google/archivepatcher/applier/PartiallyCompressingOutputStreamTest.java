@@ -29,6 +29,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.zip.Deflater;
 
 /**
  * Tests for {@link PartiallyCompressingOutputStream}.
@@ -82,7 +83,7 @@ public class PartiallyCompressingOutputStreamTest {
     // Test the case where there are no compression ranges at all and nothing is written.
     stream =
         new PartiallyCompressingOutputStream(
-            Collections.<TypedRange<JreDeflateParameters>>emptyList(), outBuffer, 32768);
+            Collections.<TypedRange<JreDeflateParameters>>emptyList(), outBuffer, 32768, Deflater::new);
     byte[] input = new byte[] {};
     stream.write(input);
     stream.flush();
@@ -95,7 +96,7 @@ public class PartiallyCompressingOutputStreamTest {
     // Test the case where there are no compression ranges at all.
     stream =
         new PartiallyCompressingOutputStream(
-            Collections.<TypedRange<JreDeflateParameters>>emptyList(), outBuffer, 32768);
+            Collections.<TypedRange<JreDeflateParameters>>emptyList(), outBuffer, 32768, Deflater::new);
     byte[] input = new byte[] {1, 77, 66, 44, 22, 11};
     byte[] expected = input.clone();
     stream.write(input);
@@ -110,7 +111,7 @@ public class PartiallyCompressingOutputStreamTest {
         new TypedRange<JreDeflateParameters>(
             0, ENTRY1.getUncompressedBinaryContent().length, PARAMS1);
     stream =
-        new PartiallyCompressingOutputStream(Collections.singletonList(range), outBuffer, 32768);
+        new PartiallyCompressingOutputStream(Collections.singletonList(range), outBuffer, 32768, Deflater::new);
     stream.write(ENTRY1.getUncompressedBinaryContent());
     stream.flush();
     Assert.assertArrayEquals(ENTRY1.getCompressedBinaryContent(), outBuffer.toByteArray());
@@ -121,7 +122,7 @@ public class PartiallyCompressingOutputStreamTest {
     // Write uncompressed data followed by compressed data
     stream =
         new PartiallyCompressingOutputStream(
-            Collections.singletonList(COMPRESS_RANGE_1), outBuffer, 32768);
+            Collections.singletonList(COMPRESS_RANGE_1), outBuffer, 32768, Deflater::new);
     byte[] input = fuse(PREAMBLE_BYTES, ENTRY1.getUncompressedBinaryContent());
     byte[] expected = fuse(PREAMBLE_BYTES, ENTRY1.getCompressedBinaryContent());
     stream.write(input);
@@ -134,7 +135,7 @@ public class PartiallyCompressingOutputStreamTest {
     // Write uncompressed data followed by compressed data and another bit of uncompressed data
     stream =
         new PartiallyCompressingOutputStream(
-            Collections.singletonList(COMPRESS_RANGE_1), outBuffer, 32768);
+            Collections.singletonList(COMPRESS_RANGE_1), outBuffer, 32768, Deflater::new);
     byte[] input = fuse(PREAMBLE_BYTES, ENTRY1.getUncompressedBinaryContent(), GAP1_BYTES);
     byte[] expected = fuse(PREAMBLE_BYTES, ENTRY1.getCompressedBinaryContent(), GAP1_BYTES);
     stream.write(input);
@@ -148,7 +149,7 @@ public class PartiallyCompressingOutputStreamTest {
     // Thrash by writing one byte at a time to pound on edge-casey code
     stream =
         new PartiallyCompressingOutputStream(
-            Arrays.asList(COMPRESS_RANGE_1, COMPRESS_RANGE_2), outBuffer, 32768);
+            Arrays.asList(COMPRESS_RANGE_1, COMPRESS_RANGE_2), outBuffer, 32768, Deflater::new);
     byte[] input =
         fuse(
             PREAMBLE_BYTES,

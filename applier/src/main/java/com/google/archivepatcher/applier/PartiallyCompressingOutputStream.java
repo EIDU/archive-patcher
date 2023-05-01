@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.BiFunction;
 import java.util.zip.Deflater;
 import java.util.zip.DeflaterOutputStream;
 
@@ -35,6 +36,7 @@ public class PartiallyCompressingOutputStream extends FilterOutputStream {
    * The underlying stream.
    */
   private final OutputStream normalOut;
+  private final BiFunction<Integer, Boolean, Deflater> deflaterFactory;
 
   /**
    * The deflater, non-null only during compression.
@@ -87,10 +89,12 @@ public class PartiallyCompressingOutputStream extends FilterOutputStream {
   public PartiallyCompressingOutputStream(
       List<TypedRange<JreDeflateParameters>> compressionRanges,
       OutputStream out,
-      int compressionBufferSize) {
+      int compressionBufferSize,
+      BiFunction<Integer, Boolean, Deflater> deflaterFactory) {
     super(out);
     this.normalOut = out;
     this.compressionBufferSize = compressionBufferSize;
+    this.deflaterFactory = deflaterFactory;
     rangeIterator = compressionRanges.iterator();
     if (rangeIterator.hasNext()) {
       nextCompressedRange = rangeIterator.next();
@@ -135,11 +139,11 @@ public class PartiallyCompressingOutputStream extends FilterOutputStream {
       // Compression will begin immediately.
       JreDeflateParameters parameters = nextCompressedRange.getMetadata();
       if (deflater == null) {
-        deflater = new Deflater(parameters.level, parameters.nowrap);
+        deflater = deflaterFactory.apply(parameters.level, parameters.nowrap);
       } else if (lastDeflateParameters.nowrap != parameters.nowrap) {
         // Last deflater must be destroyed because nowrap settings do not match.
         deflater.end();
-        deflater = new Deflater(parameters.level, parameters.nowrap);
+        deflater = deflaterFactory.apply(parameters.level, parameters.nowrap);
       }
       // Deflater will already have been reset at the end of this method, no need to do it again.
       // Just set up the right parameters.

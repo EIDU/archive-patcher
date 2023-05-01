@@ -30,6 +30,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.zip.Deflater;
 
 /**
  * Simple command-line tool for generating and applying patches.
@@ -215,7 +216,7 @@ public class FileByFileTool extends AbstractTool {
     File tempFile = File.createTempFile("fbftool", "tmp");
     File tempDir = tempFile.getParentFile();
     tempFile.delete();
-    FileByFileV1DeltaApplier applier = new FileByFileV1DeltaApplier(tempDir);
+    FileByFileV1DeltaApplier applier = new FileByFileV1DeltaApplier(tempDir, Deflater::new);
     try (FileInputStream patchIn = new FileInputStream(patchFile);
         BufferedInputStream bufferedPatchIn = new BufferedInputStream(patchIn);
         FileOutputStream newOut = new FileOutputStream(newFile);

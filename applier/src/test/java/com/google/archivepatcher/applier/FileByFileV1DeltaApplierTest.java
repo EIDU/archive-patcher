@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.zip.Deflater;
 
 /**
  * Tests for {@link FileByFileV1DeltaApplier}.
@@ -149,7 +150,7 @@ public class FileByFileV1DeltaApplierTest {
     patchBytes = writePatch();
 
     // Initialize fake delta applier to mock out dependency on bsdiff
-    fakeApplier = new FileByFileV1DeltaApplier(tempDir) {
+    fakeApplier = new FileByFileV1DeltaApplier(tempDir, Deflater::new) {
           @Override
           protected DeltaApplier getDeltaApplier() {
             return new FakeDeltaApplier();

@@ -21,6 +21,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.function.BiFunction;
+import java.util.zip.Deflater;
 
 /**
  * Applies V1 patches.
@@ -36,14 +38,15 @@ public class FileByFileV1DeltaApplier implements DeltaApplier {
    * The temp directory to use.
    */
   private final File tempDir;
+  private final BiFunction<Integer, Boolean, Deflater> deflaterFactory;
 
   /**
    * Creates a new delta applier that will use the default temp directory for working files. This is
-   * equivalent to calling {@link #FileByFileV1DeltaApplier(File)} with a <code>null</code> file
-   * argument.
+   * equivalent to calling {@link #FileByFileV1DeltaApplier(File, BiFunction)}
+   * with a <code>null</code> file argument.
    */
-  public FileByFileV1DeltaApplier() {
-    this(null);
+  public FileByFileV1DeltaApplier(BiFunction<Integer, Boolean, Deflater> deflaterFactory) {
+    this(null, deflaterFactory);
   }
 
   /**
@@ -52,11 +55,12 @@ public class FileByFileV1DeltaApplier implements DeltaApplier {
    * @param tempDir a temp directory where the delta-friendly old blob can be written during the
    *     patch application process; if null, the system's default temporary directory is used
    */
-  public FileByFileV1DeltaApplier(File tempDir) {
+  public FileByFileV1DeltaApplier(File tempDir, BiFunction<Integer, Boolean, Deflater> deflaterFactory) {
     if (tempDir == null) {
       tempDir = new File(System.getProperty("java.io.tmpdir"));
     }
     this.tempDir = tempDir;
+    this.deflaterFactory = deflaterFactory;
   }
 
   @Override
@@ -105,7 +109,8 @@ public class FileByFileV1DeltaApplier implements DeltaApplier {
         new PartiallyCompressingOutputStream(
             plan.getDeltaFriendlyNewFileRecompressionPlan(),
             newBlobOut,
-            DEFAULT_COPY_BUFFER_SIZE);
+            DEFAULT_COPY_BUFFER_SIZE,
+            deflaterFactory);
     deltaApplier.applyDelta(deltaFriendlyOldBlob, limitedDeltaIn, recompressingNewBlobOut);
     recompressingNewBlobOut.flush();
   }
