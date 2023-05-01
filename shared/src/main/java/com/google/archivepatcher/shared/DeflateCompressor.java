@@ -17,6 +17,7 @@ package com.google.archivepatcher.shared;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.function.BiFunction;
 import java.util.zip.Deflater;
 import java.util.zip.DeflaterOutputStream;
 
@@ -26,6 +27,8 @@ import java.util.zip.DeflaterOutputStream;
  * write buffer. Buffers are allocated on-demand and discarded after use.
  */
 public class DeflateCompressor implements Compressor {
+
+  private final BiFunction<Integer, Boolean, Deflater> deflaterFactory;
 
   /**
    * The compression level to use. Defaults to {@link Deflater#DEFAULT_COMPRESSION}.
@@ -64,6 +67,10 @@ public class DeflateCompressor implements Compressor {
    * Whether or not to cache {@link Deflater} instances, which is a major performance tradeoff.
    */
   private boolean caching = false;
+
+  public DeflateCompressor(BiFunction<Integer, Boolean, Deflater> deflaterFactory) {
+    this.deflaterFactory = deflaterFactory;
+  }
 
   /**
    * Returns whether or not to suppress wrapping the deflate output with the standard zlib header
@@ -199,7 +206,7 @@ public class DeflateCompressor implements Compressor {
   protected Deflater createOrResetDeflater() {
     Deflater result = deflater;
     if (result == null) {
-      result = new Deflater(compressionLevel, nowrap);
+      result = deflaterFactory.apply(compressionLevel, nowrap);
       result.setStrategy(strategy);
       if (caching) {
         deflater = result;

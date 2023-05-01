@@ -33,6 +33,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.zip.Deflater;
 
 /**
  * Simple command-line tool for explaining patches.
@@ -132,11 +133,11 @@ public class PatchExplainerTool extends AbstractTool {
     }
     File oldFile = getRequiredFileOrDie(oldPath, "old file");
     File newFile = getRequiredFileOrDie(newPath, "new file");
-    DeflateCompressor compressor = new DeflateCompressor();
+    DeflateCompressor compressor = new DeflateCompressor(Deflater::new);
     compressor.setCaching(true);
     compressor.setCompressionLevel(9);
     PatchExplainer explainer =
-        new PatchExplainer(new DeflateCompressor(), new BsDiffDeltaGenerator());
+        new PatchExplainer(new DeflateCompressor(Deflater::new), new BsDiffDeltaGenerator());
     List<RecommendationModifier> recommendationModifiers = new ArrayList<RecommendationModifier>();
     if (totalRecompressionLimit != null) {
       recommendationModifiers.add(new TotalRecompressionLimiter(totalRecompressionLimit));

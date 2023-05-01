@@ -25,10 +25,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.zip.CRC32;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
+import java.util.zip.*;
 
 /**
  * A testing construct that provides a well-known archive and metadata about it. The archive
@@ -113,7 +110,7 @@ public class UnitTestZipArchive {
       String path, int level, boolean nowrap, String contentPrefix, String comment) {
     String corpusText;
     try {
-      corpusText = new String(new DefaultDeflateCompatibilityWindow().getCorpus(), "US-ASCII");
+      corpusText = new String(new DefaultDeflateCompatibilityWindow(Deflater::new).getCorpus(), "US-ASCII");
     } catch (UnsupportedEncodingException e) {
       throw new RuntimeException("System doesn't support US-ASCII", e);
     }

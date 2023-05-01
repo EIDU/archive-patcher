@@ -38,7 +38,7 @@ public class DeflateCompressorTest {
    * Test data for compression. Uses the {@link DefaultDeflateCompatibilityWindow}'s corpus because
    * it is already set up to produce different outputs for each compression level.
    */
-  private final static byte[] CONTENT = new DefaultDeflateCompatibilityWindow().getCorpus();
+  private final static byte[] CONTENT = new DefaultDeflateCompatibilityWindow(Deflater::new).getCorpus();
 
   /**
    * Helper class for storing the compressed and uncompressed form of something together.
@@ -76,7 +76,7 @@ public class DeflateCompressorTest {
 
   @Before
   public void setUp() {
-    compressor = new DeflateCompressor();
+    compressor = new DeflateCompressor(Deflater::new);
     rawContentIn = new ByteArrayInputStream(CONTENT);
     compressedContentOut = new ByteArrayOutputStream();
   }

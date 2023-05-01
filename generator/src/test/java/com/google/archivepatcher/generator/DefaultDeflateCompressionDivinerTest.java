@@ -26,6 +26,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.zip.Deflater;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -50,7 +52,7 @@ public class DefaultDeflateCompressionDivinerTest {
 
   @Before
   public void setup() {
-    testData = new DefaultDeflateCompatibilityWindow().getCorpus();
+    testData = new DefaultDeflateCompatibilityWindow(Deflater::new).getCorpus();
     diviner = new DefaultDeflateCompressionDiviner();
   }
 
@@ -61,7 +63,7 @@ public class DefaultDeflateCompressionDivinerTest {
    * @return the temp file with the delivery
    */
   private byte[] deflate(JreDeflateParameters parameters) throws IOException {
-    DeflateCompressor compressor = new DeflateCompressor();
+    DeflateCompressor compressor = new DeflateCompressor(Deflater::new);
     compressor.setNowrap(parameters.nowrap);
     compressor.setStrategy(parameters.strategy);
     compressor.setCompressionLevel(parameters.level);

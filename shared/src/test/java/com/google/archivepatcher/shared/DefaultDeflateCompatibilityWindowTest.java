@@ -16,6 +16,8 @@ package com.google.archivepatcher.shared;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.zip.Deflater;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,6 +39,10 @@ public class DefaultDeflateCompatibilityWindowTest {
    * Trivial subclass for testing, always fails compatibility checks.
    */
   private class BrokenCompatibilityWindow extends DefaultDeflateCompatibilityWindow {
+    private BrokenCompatibilityWindow() {
+      super(Deflater::new);
+    }
+
     @Override
     public Map<JreDeflateParameters, String> getBaselineValues() {
       // Superclass's version is immutable, so make a copy.
@@ -48,6 +54,10 @@ public class DefaultDeflateCompatibilityWindowTest {
   }
 
   private class InfallibleCompatibilityWindow extends DefaultDeflateCompatibilityWindow {
+    private InfallibleCompatibilityWindow() {
+      super(Deflater::new);
+    }
+
     @Override
     public Map<JreDeflateParameters, String> getBaselineValues() {
       // Using the system values for the baseline means the baseline will always match :)
@@ -57,7 +67,7 @@ public class DefaultDeflateCompatibilityWindowTest {
 
   @Before
   public void setUp() {
-    window = new DefaultDeflateCompatibilityWindow();
+    window = new DefaultDeflateCompatibilityWindow(Deflater::new);
   }
 
   @Test

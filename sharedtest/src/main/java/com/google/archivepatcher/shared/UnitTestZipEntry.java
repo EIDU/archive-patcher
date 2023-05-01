@@ -18,6 +18,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.zip.Deflater;
 
 /**
  * Data for one entry in the zip returned by {@link UnitTestZipArchive#makeTestZip()}.
@@ -102,7 +103,7 @@ public class UnitTestZipEntry {
       return getUncompressedBinaryContent();
     }
     ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-    DeflateCompressor compressor = new DeflateCompressor();
+    DeflateCompressor compressor = new DeflateCompressor(Deflater::new);
     compressor.setCompressionLevel(level);
     compressor.setNowrap(nowrap);
     try {

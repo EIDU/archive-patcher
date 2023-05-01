@@ -25,6 +25,7 @@ import org.junit.runners.JUnit4;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.zip.Deflater;
 
 /**
  * Tests for {@link PartiallyUncompressingPipe}.
@@ -62,7 +63,7 @@ public class PartiallyUncompressingPipeTest {
 
     // Make a compressor with nowrap set to *false* (unusual) and pump the uncompressed entry
     // content through it.
-    DeflateCompressor compressor = new DeflateCompressor();
+    DeflateCompressor compressor = new DeflateCompressor(Deflater::new);
     compressor.setNowrap(false);
     ByteArrayOutputStream compressBuffer = new ByteArrayOutputStream();
     compressor.compress(

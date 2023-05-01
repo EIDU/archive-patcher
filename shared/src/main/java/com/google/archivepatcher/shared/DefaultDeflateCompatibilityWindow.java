@@ -23,6 +23,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.BiFunction;
 import java.util.zip.Deflater;
 
 // TODO: Skip the zlib header bytes for fingerprint computation and simply ignore the "wrapped" set
@@ -65,6 +66,12 @@ import java.util.zip.Deflater;
  * (https://github.com/madler/zlib/commit/086e982175da84b3db958191031380794315f95f).
  */
 public class DefaultDeflateCompatibilityWindow {
+  private final BiFunction<Integer, Boolean, Deflater> deflaterFactory;
+
+  public DefaultDeflateCompatibilityWindow(BiFunction<Integer, Boolean, Deflater> deflaterFactory) {
+    this.deflaterFactory = deflaterFactory;
+  }
+
   /**
    * Implementation of the lazy-holder idiom to hold and return the baseline.
    */
@@ -321,7 +328,7 @@ public class DefaultDeflateCompatibilityWindow {
       throw new RuntimeException("System doesn't support SHA-256", e);
     }
 
-    DeflateCompressor compressor = new DeflateCompressor();
+    DeflateCompressor compressor = new DeflateCompressor(deflaterFactory);
     compressor.setCaching(true);  // Makes this computation lighter weight.
     boolean[] nowrapValues = {true, false};
     int[] strategies = {Deflater.DEFAULT_STRATEGY, Deflater.FILTERED, Deflater.HUFFMAN_ONLY};

@@ -16,8 +16,6 @@ package com.google.archivepatcher.shared;
 
 import static org.junit.Assert.assertTrue;
 
-import com.google.archivepatcher.shared.DeflateUncompressor;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -43,7 +41,7 @@ public class DeflateUncompressorTest {
    * Test data for compression. Uses the {@link DefaultDeflateCompatibilityWindow}'s corpus because
    * it is already set up to produce different outputs for each compression level.
    */
-  private final static byte[] CONTENT = new DefaultDeflateCompatibilityWindow().getCorpus();
+  private final static byte[] CONTENT = new DefaultDeflateCompatibilityWindow(Deflater::new).getCorpus();
 
   private byte[] compressedContent;
   private ByteArrayInputStream compressedContentIn;
