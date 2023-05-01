@@ -63,10 +63,6 @@ task javadocJar (type: Jar, dependsOn: javadoc) {
     from "LICENSE"
 }
 
-dependencies {
-    compile project(':tools')
-}
-
 allprojects {
     repositories {
         jcenter()
