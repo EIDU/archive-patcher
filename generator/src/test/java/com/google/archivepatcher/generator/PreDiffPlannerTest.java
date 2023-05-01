@@ -15,12 +15,8 @@
 package com.google.archivepatcher.generator;
 
 import com.google.archivepatcher.generator.DefaultDeflateCompressionDiviner.DivinationResult;
-import com.google.archivepatcher.shared.DefaultDeflateCompatibilityWindow;
-import com.google.archivepatcher.shared.JreDeflateParameters;
-import com.google.archivepatcher.shared.RandomAccessFileInputStream;
-import com.google.archivepatcher.shared.TypedRange;
-import com.google.archivepatcher.shared.UnitTestZipArchive;
-import com.google.archivepatcher.shared.UnitTestZipEntry;
+import com.google.archivepatcher.shared.*;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -251,7 +247,7 @@ public class PreDiffPlannerTest {
       originalOldArchiveZipEntriesByPath.put(key, zipEntry);
     }
 
-    DefaultDeflateCompressionDiviner diviner = new DefaultDeflateCompressionDiviner();
+    DefaultDeflateCompressionDiviner diviner = new DefaultDeflateCompressionDiviner(DefaultDeflater::new);
     for (DivinationResult divinationResult : diviner.divineDeflateParameters(newFile)) {
       ByteArrayHolder key = new ByteArrayHolder(divinationResult.minimalZipEntry.getFileNameBytes());
       originalNewArchiveZipEntriesByPath.put(key, divinationResult.minimalZipEntry);

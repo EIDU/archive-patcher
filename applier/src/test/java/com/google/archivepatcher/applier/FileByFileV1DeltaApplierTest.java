@@ -14,6 +14,7 @@
 
 package com.google.archivepatcher.applier;
 
+import com.google.archivepatcher.shared.DefaultDeflater;
 import com.google.archivepatcher.shared.JreDeflateParameters;
 import com.google.archivepatcher.shared.PatchConstants;
 import com.google.archivepatcher.shared.UnitTestZipEntry;
@@ -36,7 +37,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.zip.Deflater;
 
 /**
  * Tests for {@link FileByFileV1DeltaApplier}.
@@ -150,7 +150,7 @@ public class FileByFileV1DeltaApplierTest {
     patchBytes = writePatch();
 
     // Initialize fake delta applier to mock out dependency on bsdiff
-    fakeApplier = new FileByFileV1DeltaApplier(tempDir, Deflater::new) {
+    fakeApplier = new FileByFileV1DeltaApplier(tempDir, DefaultDeflater::new) {
           @Override
           protected DeltaApplier getDeltaApplier() {
             return new FakeDeltaApplier();

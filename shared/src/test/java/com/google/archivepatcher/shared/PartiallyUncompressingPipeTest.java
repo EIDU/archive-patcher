@@ -63,7 +63,7 @@ public class PartiallyUncompressingPipeTest {
 
     // Make a compressor with nowrap set to *false* (unusual) and pump the uncompressed entry
     // content through it.
-    DeflateCompressor compressor = new DeflateCompressor(Deflater::new);
+    DeflateCompressor compressor = new DeflateCompressor(DefaultDeflater::new);
     compressor.setNowrap(false);
     ByteArrayOutputStream compressBuffer = new ByteArrayOutputStream();
     compressor.compress(

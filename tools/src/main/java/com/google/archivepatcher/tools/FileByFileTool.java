@@ -19,6 +19,8 @@ import com.google.archivepatcher.generator.DeltaFriendlyOldBlobSizeLimiter;
 import com.google.archivepatcher.generator.FileByFileV1DeltaGenerator;
 import com.google.archivepatcher.generator.RecommendationModifier;
 import com.google.archivepatcher.generator.TotalRecompressionLimiter;
+import com.google.archivepatcher.shared.DefaultDeflater;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -196,6 +198,7 @@ public class FileByFileTool extends AbstractTool {
     }
     FileByFileV1DeltaGenerator generator =
         new FileByFileV1DeltaGenerator(
+            DefaultDeflater::new,
             recommendationModifiers.toArray(new RecommendationModifier[] {}));
     try (FileOutputStream patchOut = new FileOutputStream(patchFile);
         BufferedOutputStream bufferedPatchOut = new BufferedOutputStream(patchOut)) {
@@ -216,7 +219,7 @@ public class FileByFileTool extends AbstractTool {
     File tempFile = File.createTempFile("fbftool", "tmp");
     File tempDir = tempFile.getParentFile();
     tempFile.delete();
-    FileByFileV1DeltaApplier applier = new FileByFileV1DeltaApplier(tempDir, Deflater::new);
+    FileByFileV1DeltaApplier applier = new FileByFileV1DeltaApplier(tempDir, DefaultDeflater::new);
     try (FileInputStream patchIn = new FileInputStream(patchFile);
         BufferedInputStream bufferedPatchIn = new BufferedInputStream(patchIn);
         FileOutputStream newOut = new FileOutputStream(newFile);

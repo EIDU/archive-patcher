@@ -15,6 +15,8 @@
 package com.google.archivepatcher.generator;
 
 import com.google.archivepatcher.generator.bsdiff.BsDiffDeltaGenerator;
+import com.google.archivepatcher.shared.IDeflater;
+
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -23,11 +25,14 @@ import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.BiFunction;
 
 /**
  * Generates file-by-file patches.
  */
 public class FileByFileV1DeltaGenerator implements DeltaGenerator {
+
+  private final BiFunction<Integer, Boolean, IDeflater> deflaterFactory;
 
   /** Optional modifiers for planning and patch generation. */
   private final List<RecommendationModifier> recommendationModifiers;
@@ -40,7 +45,10 @@ public class FileByFileV1DeltaGenerator implements DeltaGenerator {
    *     of recompression that a patch applier needs to do. Modifiers are applied in the order they
    *     are specified.
    */
-  public FileByFileV1DeltaGenerator(RecommendationModifier... recommendationModifiers) {
+  public FileByFileV1DeltaGenerator(
+          BiFunction<Integer, Boolean, IDeflater> deflaterFactory,
+          RecommendationModifier... recommendationModifiers) {
+    this.deflaterFactory = deflaterFactory;
     if (recommendationModifiers != null) {
       this.recommendationModifiers =
           Collections.unmodifiableList(Arrays.asList(recommendationModifiers));
@@ -74,6 +82,7 @@ public class FileByFileV1DeltaGenerator implements DeltaGenerator {
           new PreDiffExecutor.Builder()
               .readingOriginalFiles(oldFile, newFile)
               .writingDeltaFriendlyFiles(deltaFriendlyOldFile.file, deltaFriendlyNewFile.file);
+      builder.withDeflaterFactory(deflaterFactory);
       for (RecommendationModifier modifier : recommendationModifiers) {
         builder.withRecommendationModifier(modifier);
       }

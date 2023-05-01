@@ -103,7 +103,7 @@ public class UnitTestZipEntry {
       return getUncompressedBinaryContent();
     }
     ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-    DeflateCompressor compressor = new DeflateCompressor(Deflater::new);
+    DeflateCompressor compressor = new DeflateCompressor(DefaultDeflater::new);
     compressor.setCompressionLevel(level);
     compressor.setNowrap(nowrap);
     try {

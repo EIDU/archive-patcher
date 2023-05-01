@@ -14,11 +14,8 @@
 
 package com.google.archivepatcher.generator;
 
-import com.google.archivepatcher.shared.ByteArrayInputStreamFactory;
-import com.google.archivepatcher.shared.DefaultDeflateCompatibilityWindow;
-import com.google.archivepatcher.shared.JreDeflateParameters;
-import com.google.archivepatcher.shared.MultiViewInputStreamFactory;
-import com.google.archivepatcher.shared.RandomAccessFileInputStreamFactory;
+import com.google.archivepatcher.shared.*;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,8 +25,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.zip.Deflater;
-import java.util.zip.DeflaterOutputStream;
+import java.util.function.BiFunction;
 import java.util.zip.Inflater;
 import java.util.zip.InflaterInputStream;
 import java.util.zip.ZipException;
@@ -75,6 +71,12 @@ public class DefaultDeflateCompressionDiviner {
       this.minimalZipEntry = minimalZipEntry;
       this.divinedParameters = divinedParameters;
     }
+  }
+
+  private final BiFunction<Integer, Boolean, IDeflater> deflaterFactory;
+
+  public DefaultDeflateCompressionDiviner(BiFunction<Integer, Boolean, IDeflater> deflaterFactory) {
+    this.deflaterFactory = deflaterFactory;
   }
 
   /**
@@ -163,7 +165,7 @@ public class DefaultDeflateCompressionDiviner {
     // Iterate over all relevant combinations of nowrap, strategy and level.
     for (boolean nowrap : new boolean[] {true, false}) {
       Inflater inflater = new Inflater(nowrap);
-      Deflater deflater = new Deflater(0, nowrap);
+      IDeflater deflater = deflaterFactory.apply(0, nowrap);
 
       strategy_loop:
       for (int strategy : new int[] {0, 1, 2}) {
@@ -193,11 +195,8 @@ public class DefaultDeflateCompressionDiviner {
    * Closes the (de)compressor and discards any unprocessed input. This method should be called when
    * the (de)compressor is no longer being used. Once this method is called, the behavior
    * De/Inflater is undefined.
-   *
-   * @see Inflater#end
-   * @see Deflater#end
    */
-  private static void end(Inflater inflater, Deflater deflater) {
+  private static void end(Inflater inflater, IDeflater deflater) {
     inflater.end();
     deflater.end();
   }
@@ -216,7 +215,7 @@ public class DefaultDeflateCompressionDiviner {
    */
   private boolean matches(
       Inflater inflater,
-      Deflater deflater,
+      IDeflater deflater,
       MultiViewInputStreamFactory compressedDataInputStreamFactory,
       byte[] copyBuffer)
       throws IOException {
@@ -227,7 +226,7 @@ public class DefaultDeflateCompressionDiviner {
         InflaterInputStream inflaterIn =
             new InflaterInputStream(
                 compressedDataInputStreamFactory.newStream(), inflater, copyBuffer.length);
-        DeflaterOutputStream out = new DeflaterOutputStream(matcher, deflater, copyBuffer.length)) {
+        IDeflaterOutputStream out = new IDeflaterOutputStream(matcher, deflater, copyBuffer.length)) {
       int numRead;
       while ((numRead = inflaterIn.read(copyBuffer)) >= 0) {
         out.write(copyBuffer, 0, numRead);

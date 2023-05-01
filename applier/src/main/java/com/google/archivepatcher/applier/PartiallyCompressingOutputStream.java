@@ -14,6 +14,8 @@
 
 package com.google.archivepatcher.applier;
 
+import com.google.archivepatcher.shared.IDeflater;
+import com.google.archivepatcher.shared.IDeflaterOutputStream;
 import com.google.archivepatcher.shared.JreDeflateParameters;
 import com.google.archivepatcher.shared.TypedRange;
 
@@ -23,8 +25,6 @@ import java.io.OutputStream;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.BiFunction;
-import java.util.zip.Deflater;
-import java.util.zip.DeflaterOutputStream;
 
 /**
  * An {@link OutputStream} that is pre-configured to compress some of the bytes that are written to
@@ -36,17 +36,17 @@ public class PartiallyCompressingOutputStream extends FilterOutputStream {
    * The underlying stream.
    */
   private final OutputStream normalOut;
-  private final BiFunction<Integer, Boolean, Deflater> deflaterFactory;
+  private final BiFunction<Integer, Boolean, IDeflater> deflaterFactory;
 
   /**
    * The deflater, non-null only during compression.
    */
-  private Deflater deflater = null;
+  private IDeflater deflater = null;
 
   /**
    * The deflater stream, non-null only during compression.
    */
-  private DeflaterOutputStream deflaterOut = null;
+  private IDeflaterOutputStream deflaterOut = null;
 
   /**
    * Used when writing one byte at a time.
@@ -90,7 +90,7 @@ public class PartiallyCompressingOutputStream extends FilterOutputStream {
       List<TypedRange<JreDeflateParameters>> compressionRanges,
       OutputStream out,
       int compressionBufferSize,
-      BiFunction<Integer, Boolean, Deflater> deflaterFactory) {
+      BiFunction<Integer, Boolean, IDeflater> deflaterFactory) {
     super(out);
     this.normalOut = out;
     this.compressionBufferSize = compressionBufferSize;
@@ -149,7 +149,7 @@ public class PartiallyCompressingOutputStream extends FilterOutputStream {
       // Just set up the right parameters.
       deflater.setLevel(parameters.level);
       deflater.setStrategy(parameters.strategy);
-      deflaterOut = new DeflaterOutputStream(normalOut, deflater, compressionBufferSize);
+      deflaterOut = new IDeflaterOutputStream(normalOut, deflater, compressionBufferSize);
     }
 
     int numBytesToWrite;

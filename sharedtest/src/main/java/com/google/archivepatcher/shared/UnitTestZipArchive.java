@@ -110,7 +110,7 @@ public class UnitTestZipArchive {
       String path, int level, boolean nowrap, String contentPrefix, String comment) {
     String corpusText;
     try {
-      corpusText = new String(new DefaultDeflateCompatibilityWindow(Deflater::new).getCorpus(), "US-ASCII");
+      corpusText = new String(new DefaultDeflateCompatibilityWindow(DefaultDeflater::new).getCorpus(), "US-ASCII");
     } catch (UnsupportedEncodingException e) {
       throw new RuntimeException("System doesn't support US-ASCII", e);
     }

@@ -28,7 +28,7 @@ import java.util.zip.DeflaterOutputStream;
  */
 public class DeflateCompressor implements Compressor {
 
-  private final BiFunction<Integer, Boolean, Deflater> deflaterFactory;
+  private final BiFunction<Integer, Boolean, IDeflater> deflaterFactory;
 
   /**
    * The compression level to use. Defaults to {@link Deflater#DEFAULT_COMPRESSION}.
@@ -61,14 +61,14 @@ public class DeflateCompressor implements Compressor {
   /**
    * Cached {@link Deflater} to be used.
    */
-  private Deflater deflater = null;
+  private IDeflater deflater = null;
 
   /**
    * Whether or not to cache {@link Deflater} instances, which is a major performance tradeoff.
    */
   private boolean caching = false;
 
-  public DeflateCompressor(BiFunction<Integer, Boolean, Deflater> deflaterFactory) {
+  public DeflateCompressor(BiFunction<Integer, Boolean, IDeflater> deflaterFactory) {
     this.deflaterFactory = deflaterFactory;
   }
 
@@ -203,8 +203,8 @@ public class DeflateCompressor implements Compressor {
    * future use.
    * @return the deflater
    */
-  protected Deflater createOrResetDeflater() {
-    Deflater result = deflater;
+  protected IDeflater createOrResetDeflater() {
+    IDeflater result = deflater;
     if (result == null) {
       result = deflaterFactory.apply(compressionLevel, nowrap);
       result.setStrategy(strategy);
@@ -230,8 +230,8 @@ public class DeflateCompressor implements Compressor {
   @Override
   public void compress(InputStream uncompressedIn, OutputStream compressedOut) throws IOException {
     byte[] buffer = new byte[inputBufferSize];
-    DeflaterOutputStream deflaterOut =
-        new DeflaterOutputStream(compressedOut, createOrResetDeflater(), outputBufferSize);
+    IDeflaterOutputStream deflaterOut =
+        new IDeflaterOutputStream(compressedOut, createOrResetDeflater(), outputBufferSize);
     int numRead = 0;
     while ((numRead = uncompressedIn.read(buffer)) >= 0) {
       deflaterOut.write(buffer, 0, numRead);

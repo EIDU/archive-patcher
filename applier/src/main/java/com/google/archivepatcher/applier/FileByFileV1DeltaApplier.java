@@ -16,6 +16,7 @@ package com.google.archivepatcher.applier;
 
 import com.google.archivepatcher.applier.bsdiff.BsDiffDeltaApplier;
 import com.google.archivepatcher.shared.DeltaFriendlyFile;
+import com.google.archivepatcher.shared.IDeflater;
 import com.google.archivepatcher.shared.RandomAccessFileOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -38,14 +39,14 @@ public class FileByFileV1DeltaApplier implements DeltaApplier {
    * The temp directory to use.
    */
   private final File tempDir;
-  private final BiFunction<Integer, Boolean, Deflater> deflaterFactory;
+  private final BiFunction<Integer, Boolean, IDeflater> deflaterFactory;
 
   /**
    * Creates a new delta applier that will use the default temp directory for working files. This is
    * equivalent to calling {@link #FileByFileV1DeltaApplier(File, BiFunction)}
    * with a <code>null</code> file argument.
    */
-  public FileByFileV1DeltaApplier(BiFunction<Integer, Boolean, Deflater> deflaterFactory) {
+  public FileByFileV1DeltaApplier(BiFunction<Integer, Boolean, IDeflater> deflaterFactory) {
     this(null, deflaterFactory);
   }
 
@@ -55,7 +56,7 @@ public class FileByFileV1DeltaApplier implements DeltaApplier {
    * @param tempDir a temp directory where the delta-friendly old blob can be written during the
    *     patch application process; if null, the system's default temporary directory is used
    */
-  public FileByFileV1DeltaApplier(File tempDir, BiFunction<Integer, Boolean, Deflater> deflaterFactory) {
+  public FileByFileV1DeltaApplier(File tempDir, BiFunction<Integer, Boolean, IDeflater> deflaterFactory) {
     if (tempDir == null) {
       tempDir = new File(System.getProperty("java.io.tmpdir"));
     }

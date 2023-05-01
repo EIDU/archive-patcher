@@ -15,18 +15,13 @@
 package com.google.archivepatcher.generator;
 
 import com.google.archivepatcher.generator.DefaultDeflateCompressionDiviner.DivinationResult;
-import com.google.archivepatcher.shared.ByteArrayInputStreamFactory;
-import com.google.archivepatcher.shared.DefaultDeflateCompatibilityWindow;
-import com.google.archivepatcher.shared.DeflateCompressor;
-import com.google.archivepatcher.shared.JreDeflateParameters;
-import com.google.archivepatcher.shared.UnitTestZipArchive;
-import com.google.archivepatcher.shared.UnitTestZipEntry;
+import com.google.archivepatcher.shared.*;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.zip.Deflater;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -52,8 +47,8 @@ public class DefaultDeflateCompressionDivinerTest {
 
   @Before
   public void setup() {
-    testData = new DefaultDeflateCompatibilityWindow(Deflater::new).getCorpus();
-    diviner = new DefaultDeflateCompressionDiviner();
+    testData = new DefaultDeflateCompatibilityWindow(DefaultDeflater::new).getCorpus();
+    diviner = new DefaultDeflateCompressionDiviner(DefaultDeflater::new);
   }
 
   /**
@@ -63,7 +58,7 @@ public class DefaultDeflateCompressionDivinerTest {
    * @return the temp file with the delivery
    */
   private byte[] deflate(JreDeflateParameters parameters) throws IOException {
-    DeflateCompressor compressor = new DeflateCompressor(Deflater::new);
+    DeflateCompressor compressor = new DeflateCompressor(DefaultDeflater::new);
     compressor.setNowrap(parameters.nowrap);
     compressor.setStrategy(parameters.strategy);
     compressor.setCompressionLevel(parameters.level);

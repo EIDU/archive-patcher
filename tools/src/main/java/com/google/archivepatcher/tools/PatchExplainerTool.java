@@ -22,6 +22,7 @@ import com.google.archivepatcher.generator.RecommendationModifier;
 import com.google.archivepatcher.generator.RecommendationReason;
 import com.google.archivepatcher.generator.TotalRecompressionLimiter;
 import com.google.archivepatcher.generator.bsdiff.BsDiffDeltaGenerator;
+import com.google.archivepatcher.shared.DefaultDeflater;
 import com.google.archivepatcher.shared.DeflateCompressor;
 import java.io.File;
 import java.io.IOException;
@@ -133,11 +134,11 @@ public class PatchExplainerTool extends AbstractTool {
     }
     File oldFile = getRequiredFileOrDie(oldPath, "old file");
     File newFile = getRequiredFileOrDie(newPath, "new file");
-    DeflateCompressor compressor = new DeflateCompressor(Deflater::new);
+    DeflateCompressor compressor = new DeflateCompressor(DefaultDeflater::new);
     compressor.setCaching(true);
     compressor.setCompressionLevel(9);
     PatchExplainer explainer =
-        new PatchExplainer(new DeflateCompressor(Deflater::new), new BsDiffDeltaGenerator());
+        new PatchExplainer(new DeflateCompressor(DefaultDeflater::new), new BsDiffDeltaGenerator());
     List<RecommendationModifier> recommendationModifiers = new ArrayList<RecommendationModifier>();
     if (totalRecompressionLimit != null) {
       recommendationModifiers.add(new TotalRecompressionLimiter(totalRecompressionLimit));

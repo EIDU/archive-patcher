@@ -66,9 +66,9 @@ import java.util.zip.Deflater;
  * (https://github.com/madler/zlib/commit/086e982175da84b3db958191031380794315f95f).
  */
 public class DefaultDeflateCompatibilityWindow {
-  private final BiFunction<Integer, Boolean, Deflater> deflaterFactory;
+  private final BiFunction<Integer, Boolean, IDeflater> deflaterFactory;
 
-  public DefaultDeflateCompatibilityWindow(BiFunction<Integer, Boolean, Deflater> deflaterFactory) {
+  public DefaultDeflateCompatibilityWindow(BiFunction<Integer, Boolean, IDeflater> deflaterFactory) {
     this.deflaterFactory = deflaterFactory;
   }
 

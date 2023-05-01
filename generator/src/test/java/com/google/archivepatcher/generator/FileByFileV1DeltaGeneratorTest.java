@@ -14,6 +14,7 @@
 
 package com.google.archivepatcher.generator;
 
+import com.google.archivepatcher.shared.DefaultDeflater;
 import com.google.archivepatcher.shared.UnitTestZipArchive;
 import java.io.ByteArrayOutputStream;
 import org.junit.Assert;
@@ -37,7 +38,7 @@ public class FileByFileV1DeltaGeneratorTest {
   @Test
   public void testGenerateDelta_BaseCase() throws Exception {
     // Simple test of generating a patch with no changes.
-    FileByFileV1DeltaGenerator generator = new FileByFileV1DeltaGenerator();
+    FileByFileV1DeltaGenerator generator = new FileByFileV1DeltaGenerator(DefaultDeflater::new);
     ByteArrayOutputStream buffer = new ByteArrayOutputStream();
     try (TempFileHolder oldArchive = new TempFileHolder();
         TempFileHolder newArchive = new TempFileHolder()) {

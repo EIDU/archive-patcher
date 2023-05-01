@@ -40,7 +40,7 @@ public class DefaultDeflateCompatibilityWindowTest {
    */
   private class BrokenCompatibilityWindow extends DefaultDeflateCompatibilityWindow {
     private BrokenCompatibilityWindow() {
-      super(Deflater::new);
+      super(DefaultDeflater::new);
     }
 
     @Override
@@ -55,7 +55,7 @@ public class DefaultDeflateCompatibilityWindowTest {
 
   private class InfallibleCompatibilityWindow extends DefaultDeflateCompatibilityWindow {
     private InfallibleCompatibilityWindow() {
-      super(Deflater::new);
+      super(DefaultDeflater::new);
     }
 
     @Override
@@ -67,7 +67,7 @@ public class DefaultDeflateCompatibilityWindowTest {
 
   @Before
   public void setUp() {
-    window = new DefaultDeflateCompatibilityWindow(Deflater::new);
+    window = new DefaultDeflateCompatibilityWindow(DefaultDeflater::new);
   }
 
   @Test

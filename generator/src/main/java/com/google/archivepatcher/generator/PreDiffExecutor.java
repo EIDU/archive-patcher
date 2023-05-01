@@ -15,9 +15,8 @@
 package com.google.archivepatcher.generator;
 
 import com.google.archivepatcher.generator.DefaultDeflateCompressionDiviner.DivinationResult;
-import com.google.archivepatcher.shared.DeltaFriendlyFile;
-import com.google.archivepatcher.shared.JreDeflateParameters;
-import com.google.archivepatcher.shared.TypedRange;
+import com.google.archivepatcher.shared.*;
+
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -27,11 +26,14 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
 
 /**
  * Prepares resources for differencing.
  */
 public class PreDiffExecutor {
+
+  private BiFunction<Integer, Boolean, IDeflater> deflaterFactory;
 
   /** A helper class to build a {@link PreDiffExecutor} with a variety of configurations. */
   public static final class Builder {
@@ -39,8 +41,8 @@ public class PreDiffExecutor {
     private File originalNewFile;
     private File deltaFriendlyOldFile;
     private File deltaFriendlyNewFile;
-    private List<RecommendationModifier> recommendationModifiers =
-        new ArrayList<RecommendationModifier>();
+    private BiFunction<Integer, Boolean, IDeflater> deflaterFactory = DefaultDeflater::new;
+    private final List<RecommendationModifier> recommendationModifiers = new ArrayList<>();
 
     /**
      * Sets the original, read-only input files to the patch generation process. This has to be
@@ -76,6 +78,11 @@ public class PreDiffExecutor {
       return this;
     }
 
+    public Builder withDeflaterFactory(BiFunction<Integer, Boolean, IDeflater> deflaterFactory) {
+      this.deflaterFactory = deflaterFactory;
+      return this;
+    }
+
     /**
      * Appends an optional {@link RecommendationModifier} to be used during the generation of the
      * {@link PreDiffPlan} and/or delta-friendly blobs.
@@ -106,6 +113,7 @@ public class PreDiffExecutor {
           originalNewFile,
           deltaFriendlyOldFile,
           deltaFriendlyNewFile,
+          deflaterFactory,
           recommendationModifiers);
     }
   }
@@ -135,15 +143,17 @@ public class PreDiffExecutor {
 
   /** Constructs a new PreDiffExecutor to work with the specified configuration. */
   private PreDiffExecutor(
-      File originalOldFile,
-      File originalNewFile,
-      File deltaFriendlyOldFile,
-      File deltaFriendlyNewFile,
-      List<RecommendationModifier> recommendationModifiers) {
+          File originalOldFile,
+          File originalNewFile,
+          File deltaFriendlyOldFile,
+          File deltaFriendlyNewFile,
+          BiFunction<Integer, Boolean, IDeflater> deflaterFactory,
+          List<RecommendationModifier> recommendationModifiers) {
     this.originalOldFile = originalOldFile;
     this.originalNewFile = originalNewFile;
     this.deltaFriendlyOldFile = deltaFriendlyOldFile;
     this.deltaFriendlyNewFile = deltaFriendlyNewFile;
+    this.deflaterFactory = deflaterFactory;
     this.recommendationModifiers = recommendationModifiers;
   }
 
@@ -212,7 +222,7 @@ public class PreDiffExecutor {
       originalOldArchiveZipEntriesByPath.put(key, zipEntry);
     }
 
-    DefaultDeflateCompressionDiviner diviner = new DefaultDeflateCompressionDiviner();
+    DefaultDeflateCompressionDiviner diviner = new DefaultDeflateCompressionDiviner(deflaterFactory);
     for (DivinationResult divinationResult : diviner.divineDeflateParameters(originalNewFile)) {
       ByteArrayHolder key =
           new ByteArrayHolder(divinationResult.minimalZipEntry.getFileNameBytes());

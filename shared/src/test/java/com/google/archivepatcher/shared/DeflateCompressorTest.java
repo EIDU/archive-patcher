@@ -38,7 +38,7 @@ public class DeflateCompressorTest {
    * Test data for compression. Uses the {@link DefaultDeflateCompatibilityWindow}'s corpus because
    * it is already set up to produce different outputs for each compression level.
    */
-  private final static byte[] CONTENT = new DefaultDeflateCompatibilityWindow(Deflater::new).getCorpus();
+  private final static byte[] CONTENT = new DefaultDeflateCompatibilityWindow(DefaultDeflater::new).getCorpus();
 
   /**
    * Helper class for storing the compressed and uncompressed form of something together.
@@ -76,7 +76,7 @@ public class DeflateCompressorTest {
 
   @Before
   public void setUp() {
-    compressor = new DeflateCompressor(Deflater::new);
+    compressor = new DeflateCompressor(DefaultDeflater::new);
     rawContentIn = new ByteArrayInputStream(CONTENT);
     compressedContentOut = new ByteArrayOutputStream();
   }
@@ -210,25 +210,25 @@ public class DeflateCompressorTest {
   @Test
   public void testCreateOrResetDeflater_Uncached() {
     compressor.setCaching(false);
-    Deflater deflater1 = compressor.createOrResetDeflater();
-    Deflater deflater2 = compressor.createOrResetDeflater();
+    IDeflater deflater1 = compressor.createOrResetDeflater();
+    IDeflater deflater2 = compressor.createOrResetDeflater();
     Assert.assertNotSame(deflater1, deflater2);
   }
 
   @Test
   public void testCreateOrResetDeflater_Cached() {
     compressor.setCaching(true);
-    Deflater deflater1 = compressor.createOrResetDeflater();
-    Deflater deflater2 = compressor.createOrResetDeflater();
+    IDeflater deflater1 = compressor.createOrResetDeflater();
+    IDeflater deflater2 = compressor.createOrResetDeflater();
     Assert.assertSame(deflater1, deflater2);
   }
 
   @Test
   public void testRelease() {
     compressor.setCaching(true);
-    Deflater deflater1 = compressor.createOrResetDeflater();
+    IDeflater deflater1 = compressor.createOrResetDeflater();
     compressor.release();
-    Deflater deflater2 = compressor.createOrResetDeflater();
+    IDeflater deflater2 = compressor.createOrResetDeflater();
     Assert.assertNotSame(deflater1, deflater2);
   }
 
