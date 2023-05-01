@@ -3,13 +3,11 @@ buildscript {
     repositories {
         jcenter()
     }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:2.2.0-rc2'
-    }
 }
 
 plugins {
     id "com.jfrog.bintray" version "1.7.3"
+    id "com.palantir.git-version" version "3.0.0"
 }
 
 apply plugin: 'java'
@@ -20,16 +18,7 @@ Properties localProperties = new Properties()
 if (localPropertiesFile.canRead())
     localProperties.load(localPropertiesFile.newDataInputStream())
 
-def gitHash = { ->
-    def stdout = new ByteArrayOutputStream()
-    exec {
-        commandLine 'git', 'rev-parse', '--short', 'HEAD'
-        standardOutput = stdout
-    }
-    return stdout.toString().trim()
-}
-
-version = 1.0
+version = gitVersion()
 
 subprojects.each { subproject -> evaluationDependsOn( subproject.path ) }
 jar.dependsOn subprojects.tasks['classes']
@@ -106,7 +95,7 @@ publishing {
             from components.java
             groupId 'com.eidu'
             artifactId 'archive-patcher'
-            version gitHash()
+            version gitVersion()
         }
     }
 }
