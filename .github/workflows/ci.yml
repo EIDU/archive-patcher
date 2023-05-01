@@ -1,6 +1,9 @@
-name: Publish
+name: CI
 
-on: push
+on:
+  push:
+    branches:
+      - '*'
 
 jobs:
   Publish:
@@ -16,9 +19,3 @@ jobs:
 
       - name: Run unit tests
         run: ./gradlew test --stacktrace
-
-      - name: Publish JAR
-        run: ./gradlew publish --stacktrace
-        env:
-          GITHUB_USER: ${{ github.actor }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
