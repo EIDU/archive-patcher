@@ -6,7 +6,7 @@ on:
       - '*'
 
 jobs:
-  Publish:
+  CI:
     runs-on: ubuntu-latest
 
     steps:

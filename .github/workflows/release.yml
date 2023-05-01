@@ -6,7 +6,7 @@ on:
       - '*.*.*'
 
 jobs:
-  Publish:
+  Release:
     runs-on: ubuntu-latest
 
     steps:
