@@ -16,6 +16,13 @@ limitations under the License.
 
 ----
 
+# This adaptation (EIDU/archive-patcher)
+
+This is a fork of the original Google archive-patcher project. It contains minor adaptations, such as:
+
+- The ability to configure the temporary directory to use.
+- The ability to inject a custom deflater.
+
 # Table of Contents
 * [Introduction](#introduction)
 * [How It Works](#how-it-works)
