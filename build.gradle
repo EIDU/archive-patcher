@@ -8,6 +8,7 @@ buildscript {
 plugins {
     id "com.jfrog.bintray" version "1.7.3"
     id "com.palantir.git-version" version "3.0.0"
+    id "signing"
 }
 
 apply plugin: 'java'
@@ -75,23 +76,59 @@ artifacts {
     archives javadocJar
 }
 
+signing {
+    useInMemoryPgpKeys(
+        System.getenv("MAVEN_CENTRAL_KEY_ID"),
+        System.getenv("MAVEN_CENTRAL_KEY"),
+        System.getenv("MAVEN_CENTRAL_KEY_PASSWORD")
+    )
+    sign(publishing.publications)
+}
+
 publishing {
     repositories {
         maven {
-            name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/EIDU/archive-patcher")
+            name = "MavenCentral"
+            url = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
             credentials {
-                username = System.getenv("GITHUB_USER") ?: localProperties.getProperty("githubUser")
-                password = System.getenv("GITHUB_TOKEN") ?: localProperties.getProperty("githubToken")
+                username = System.getenv("MAVEN_CENTRAL_USERNAME")
+                password = System.getenv("MAVEN_CENTRAL_PASSWORD")
             }
         }
     }
     publications {
-        gpr(MavenPublication) {
+        mavenJava(MavenPublication) {
             from components.java
             groupId 'com.eidu'
             artifactId 'archive-patcher'
             version gitVersion()
+
+            artifact sourcesJar
+            artifact javadocJar
+
+            pom {
+                name = "archive-patcher"
+                description = "Google Archive Patcher (EIDU fork)"
+                url = "https://github.com/EIDU/archive-patcher"
+                licenses {
+                    license {
+                        name = "Apache 2.0 License"
+                        url = "https://raw.githubusercontent.com/EIDU/archive-patcher/main/LICENSE"
+                    }
+                }
+                developers {
+                    developer {
+                        id = "berlix"
+                        name = "Felix Engelhardt"
+                        url = "https://github.com/berlix/"
+                    }
+                }
+                scm {
+                    url = "https://github.com/EIDU/archive-patcher"
+                    connection = "scm:git:git://github.com/EIDU/archive-patcher.git"
+                    developerConnection = "scm:git:ssh://git@github.com/EIDU/archive-patcher.git"
+                }
+            }
         }
     }
 }
