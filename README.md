@@ -18,10 +18,24 @@ limitations under the License.
 
 # This adaptation (EIDU/archive-patcher)
 
+![Maven Central](https://img.shields.io/maven-central/v/com.eidu/archive-patcher)
+
 This is a fork of the original Google archive-patcher project. It contains minor adaptations, such as:
 
 - The ability to configure the temporary directory to use.
 - The ability to inject a custom deflater.
+
+To use it, add the Gradle dependency:
+
+```
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation("com.eidu:archive-patcher:<version>")
+}
+```
 
 # Table of Contents
 * [Introduction](#introduction)
