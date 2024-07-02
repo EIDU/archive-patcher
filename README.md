@@ -37,6 +37,15 @@ dependencies {
 }
 ```
 
+## Support
+
+Please contact EIDU at [dev@eidu.com](mailto:dev@eidu.com) if you need help.
+
+## Contributing
+
+We are excited about your contributions. See
+[our current contribution guidelines](https://dev.eidu.com/contributing/overview) to get started.
+
 # Table of Contents
 * [Introduction](#introduction)
 * [How It Works](#how-it-works)
