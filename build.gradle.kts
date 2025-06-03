@@ -1,4 +1,5 @@
 import java.util.Properties
+import java.util.Base64
 
 buildscript {
     repositories {
@@ -11,6 +12,7 @@ plugins {
     signing
     `maven-publish`
     id("com.palantir.git-version") version "3.0.0"
+    id("tech.yanand.maven-central-publish").version("1.3.0")
 }
 
 val localPropertiesFile = project.rootProject.file("local.properties")
@@ -78,16 +80,6 @@ signing {
 }
 
 publishing {
-    repositories {
-        maven {
-            name = "MavenCentral"
-            setUrl("https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/")
-            credentials {
-                username = System.getenv("MAVEN_CENTRAL_USERNAME")
-                password = System.getenv("MAVEN_CENTRAL_PASSWORD")
-            }
-        }
-    }
     publications {
         create<MavenPublication>("mavenJava") {
             from(components["java"])
@@ -123,4 +115,10 @@ publishing {
             }
         }
     }
+}
+
+mavenCentral {
+    authToken.set(Base64.getEncoder().encodeToString("${System.getenv("MAVEN_CENTRAL_USERNAME")}:${System.getenv("MAVEN_CENTRAL_PASSWORD")}".toByteArray()))
+    publishingType.set("USER_MANAGED")
+    maxWait.set(300)
 }
