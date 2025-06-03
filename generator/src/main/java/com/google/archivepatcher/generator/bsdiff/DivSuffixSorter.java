@@ -30,7 +30,7 @@ import java.io.IOException;
  * </code></pre>
  *
  * <p>This implementation is basically a translation of the C version given by Yuta Mori:
- * <tt>libdivsufsort-2.0.0, http://code.google.com/p/libdivsufsort/</tt>
+ * libdivsufsort-2.0.0, http://code.google.com/p/libdivsufsort/
  */
 public final class DivSuffixSorter implements SuffixSorter {
 
